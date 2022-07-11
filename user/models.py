@@ -53,7 +53,7 @@ class User(AbstractBaseUser):
     join_date = models.DateTimeField(verbose_name="가입일", auto_now_add=True)
 
     # user category
-    user_category = models.ForeignKey(UserCategory, verbose_name="카테고리")
+    user_category = models.ForeignKey(UserCategory, verbose_name="카테고리",on_delete=models.SET_NULL,null=True)
 
     is_private = models.BooleanField(default=True)
     is_admin = models.BooleanField(default=False)
@@ -82,11 +82,11 @@ class User(AbstractBaseUser):
 # 가입자 상세 정보
 class UserProfile(models.Model):
     user = models.OneToOneField(User, verbose_name="사용자", on_delete=models.CASCADE)
-    prefer = models.ForeignKey(Preference, verbose_name="사용자 선호도")
-    rank = models.ForeignKey(Rank, verbose_name="평점 내역")
+    prefer = models.ForeignKey(Preference, verbose_name="사용자 선호도",on_delete=models.SET_NULL,null=True)
+    rank = models.ForeignKey(Rank, verbose_name="평점 내역",on_delete=models.SET_NULL,null=True)
 
-    fullname = models.CharField(verbose_name="이름")
-    location = models.CharField(verbose_name="지역")
+    fullname = models.CharField(verbose_name="이름",max_length=128)
+    location = models.CharField(verbose_name="지역",max_length=128)
 
     GENDERS = (
         ('M', '남성(Man)'),
@@ -98,7 +98,7 @@ class UserProfile(models.Model):
     age = models.IntegerField(verbose_name="나이")
     introduction = models.TextField(verbose_name="자기소개", null=True, blank=True)
     birthday = models.DateField(verbose_name="생일")
-    img = models.CharField(verbose_name="프로필 사진", max_length="")
+    img = models.CharField(verbose_name="프로필 사진", max_length=128)
 
     def __str__(self):
         return f"{self.user.username} 님의 프로필입니다."
