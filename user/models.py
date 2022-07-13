@@ -2,11 +2,6 @@ from django.db import models
 from django.contrib.auth.models import BaseUserManager, AbstractBaseUser
 from datetime import datetime, timedelta
 
-class Preference(models.Model):
-    name = models.CharField(verbose_name="선호", max_length=50)
-
-    def __str__(self):
-        return self.name
 
 
 class Rank(models.Model):
@@ -82,7 +77,7 @@ class User(AbstractBaseUser):
 # 가입자 상세 정보
 class UserProfile(models.Model):
     user = models.OneToOneField(User, verbose_name="사용자", on_delete=models.CASCADE)
-    prefer = models.ForeignKey(Preference, verbose_name="사용자 선호도",on_delete=models.SET_NULL,null=True)
+    prefer =models.CharField(verbose_name="선호하는 것 소개",max_length=128)
     rank = models.ForeignKey(Rank, verbose_name="랭크",on_delete=models.SET_NULL,null=True)
 
     fullname = models.CharField(verbose_name="이름",max_length=128)
