@@ -12,7 +12,6 @@ class ArticleCategory(models.Model):
 
 class Article(models.Model):
     user_id = models.ForeignKey('user.User', verbose_name="작성자", on_delete=models.CASCADE, null=True)
-    prefer_id = models.ForeignKey('user.Preference', verbose_name="취향", on_delete=models.SET_NULL, null=True)
     article_category_id = models.ForeignKey(ArticleCategory, verbose_name="카테고리", on_delete=models.SET_NULL, null=True)
     farm_name = models.CharField("농장 이름", max_length=16)
     location = models.CharField("위치", max_length=128)
