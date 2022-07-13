@@ -100,6 +100,7 @@ class UserProfile(models.Model):
     birthday = models.DateField(verbose_name="생일")
     img = models.ImageField(verbose_name="프로필이미지", upload_to=user,default=datetime
                              .now(),null=True)
+    phone_number = models.CharField(max_length=20, unique=True)
 
     def __str__(self):
         return f"{self.user.username} 님의 프로필입니다."
