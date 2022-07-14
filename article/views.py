@@ -2,16 +2,16 @@ from django.shortcuts import render
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from .models import Article
+from .models import Article as ArticleModel
 
 
 # Create your views here.
 
 class ArticleView(APIView):
     def get(self, request):
-        locations = []
+        locations = ['서울','인천']
         request_front = request.data.get('choice')
-        articles = Article.objects.all()
+        articles = ArticleModel.objects.all()
 
         if request_front == '추천':
             recommend_articles = recommends(articles, request.user.userprofile.prefer)  # 추천 시스템 함수
