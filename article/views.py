@@ -10,7 +10,7 @@ from .models import Article
 class ArticleView(APIView):
     def get(self, request):
         locations = []
-        request_front = request.data.get()
+        request_front = request.data.get('choice')
         articles = Article.objects.all()
 
         if request_front == '추천':
@@ -19,13 +19,16 @@ class ArticleView(APIView):
         elif request_front in locations:
             location_articles = location_article(articles, request_front)  # 지역 별 함수
             return Response(location_articles, status=status.HTTP_200_OK)
-        else:
-            return Response(articles, status=status.HTTP_200_OK)
+
+        return Response(articles, status=status.HTTP_200_OK)
 
 
 def recommends(articles, user_prefer):
     recommend_articles =[]
-    # 여기에서 어떤 과정이 있고 거기에 유저의 성향과 위치만 넣는 그런 방식이 되어야 할듯.
+    article_info=[]
+    for article in articles:
+        article_info.append(article.desc)
+    # 코랩에서 user_prefer,articles_info 이용한 코드 작성 밑 테스트 이후 배포할때 추가.
     return recommend_articles
 
 
