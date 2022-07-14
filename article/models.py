@@ -20,19 +20,22 @@ class Article(models.Model):
     requirement = models.CharField("모집 요건", max_length=256)
     period = models.CharField("참여 기간", max_length=256)
     desc = models.TextField("세부 내용")
-    img1 = models.ImageField(verbose_name="업로드 이미지1", upload_to='img/', default=datetime
-                             .now() + timedelta(seconds=1), blank=True)
-    img2 = models.ImageField(verbose_name="업로드 이미지2", upload_to='img/', default=datetime
-                             .now() + timedelta(seconds=2), blank=True)
-    img3 = models.ImageField(verbose_name="업로드 이미지3", upload_to='img/', default=datetime
-                             .now() + timedelta(seconds=3), blank=True)
+    img1 = models.ImageField(verbose_name="업로드 이미지1", upload_to='img/', null=True)
+    img2 = models.ImageField(verbose_name="업로드 이미지2", upload_to='img/', null=True)
+    img3 = models.ImageField(verbose_name="업로드 이미지3", upload_to='img/', null=True)
     display_article = models.BooleanField("게시글 노출", default=True)
-    exposure_end_date = models.DateTimeField("모집 기간", default=datetime.now())
+    exposure_end_date = models.DateTimeField("모집 기간", default=datetime.now() + timedelta(days=7))
     created_at = models.DateTimeField("만든 날", auto_now_add=True)
     updated_at = models.DateTimeField("업데이트 한 날", auto_now=True)
+    # img1 = models.ImageField(verbose_name="업로드 이미지1", upload_to='img/', default=datetime
+    #                          .now() + timedelta(seconds=1), blank=True)
+    # img2 = models.ImageField(verbose_name="업로드 이미지2", upload_to='img/', default=datetime
+    #                          .now() + timedelta(seconds=2), blank=True)
+    # img3 = models.ImageField(verbose_name="업로드 이미지3", upload_to='img/', default=datetime
+    #                          .now() + timedelta(seconds=3), blank=True)
 
     def __str__(self):
-        return self.name
+        return self.title
 
 
 class Apply(models.Model):
