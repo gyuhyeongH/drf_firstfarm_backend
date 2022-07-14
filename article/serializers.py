@@ -6,12 +6,6 @@ from article.models import Article as ArticleModel
 class ArticleSerializer(serializers.ModelSerializer):
     class Meta:
         model = ArticleModel
-        fields= '__all__'
-
-
-class ArticleCreateSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = ArticleModel
         fields = '__all__'
 
     farm_name = serializers.CharField(required=True, min_length=2)
@@ -34,11 +28,10 @@ class ArticleCreateSerializer(serializers.ModelSerializer):
             # exposure_end_date=validated_data['exposure_end_date'],
             # display_article=validated_data['display_article'],
         )
-        article.save()
         return article
 
     def update(self, instance, validated_data):
-        instance.title = validated_data['title']
+        for key, value in validated_data.items():
+            setattr(instance, key, value)
         instance.save()
         return instance
-
