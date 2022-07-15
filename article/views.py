@@ -9,10 +9,11 @@ from article.serializers import ArticleApplySerializer
 
 # Create your views here.
 class ArticleDetailView(APIView):
-    # authentication_classes = [JWTAuthentication]
 
     def get(self, request, article_id):
         article = ArticleModel.objects.get(id=article_id)
+    # authentication_classes = [JWTAuthentication]
+
         serializer = ArticleSerializer(article, many=True).data
         return Response(serializer, status=status.HTTP_200_OK)
 
@@ -62,3 +63,4 @@ class ArticleApplyView(APIView):
             return Response({"message": "신청이 완료되었습니다."}, status=status.HTTP_200_OK)
         else:
             return Response({"message": f'${serializer.errors}'}, status=status.HTTP_400_BAD_REQUEST)
+
