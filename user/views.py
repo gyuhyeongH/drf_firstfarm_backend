@@ -4,47 +4,60 @@ from django.contrib.auth import login, logout, authenticate
 from rest_framework.views import APIView
 from rest_framework import permissions
 from rest_framework.response import Response
+from rest_framework import  status
+from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework_simplejwt.authentication import JWTAuthentication
 
-from .models import User as UserModel
-from .models import UserProfile as UserProfileModel
-from .models import UserCategory as UserCategoryModel
-from .models import Rank as RankModel
+from user.serializers import UserSerializer, UserSiginUpSerializer, UserCategorySerializer
+from user.models import (
+    User as UserModel,
+    UserProfile as UserProfileModel,
+    UserCategory as UserCategoryModel,
+    Rank as UserRankModel
+    )
 
-
+# user/
 class UserView(APIView):
-    # permission_classes = [permissions.AllowAny]
-
+    permission_classes = [permissions.AllowAny]       # 누구나 view 접근 가능
+    # permission_classes = [permissions.IsAuthenticated] # 로그인된 사용자만 view 접근 가능
+    
     # 사용자 정보 조회
     def get(self, request):
-        return Response({"message": "get method"})
+        
+        user = request.user
+        user_serializer = UserSiginUpSerializer(user).data
+
+        return Response(user_serializer, status=status.HTTP_200_OK)
 
     # 회원가입
     def post(self, request):
-        return Response({"message": "post method!!"})
+        serializer = UserSiginUpSerializer(data=request.data)
 
-    # 회원 정보 수정
+        if serializer.is_valid(raise_exception=True):
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        else:
+            return Response({"message": f'${serializer.errors}'}, 400)
+
+    # 수정
     def put(self, request):
-        return Response({"message": "put method!!"})
+        return Response({'message': 'put method!!'})
 
-    # 회원 탈퇴
+    # 삭제
     def delete(self, request):
-        return Response({"message": "delete method!!"})
+        return Response({'message': 'delete method!!'})
 
 
-class UserAPIView(APIView):
-    # 로그인
+# 로그아웃 user/api/logout
+class UserLogoutView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
     def post(self, request):
-        username = request.data.get('username', '')
-        password = request.data.get('password', '')
+        try:
+            refresh_token = request.data["refresh_token"]
+            token = RefreshToken(refresh_token)
+            token.blacklist()
 
-        user = authenticate(request, username=username, password=password)
-
-        if not user:
-            return Response({"error": "존재하지 않는 계정이거나 패스워드가 일치하지 않습니다."})
-
-        login(request, user)
-        return Response({"message": "login success!!"})
-
-    def delete(self, request):
-        logout(request)
-        return Response({"message": "logout success!!"})
+            return Response(status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
