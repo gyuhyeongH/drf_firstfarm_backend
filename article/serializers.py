@@ -1,6 +1,8 @@
 from rest_framework import serializers
 
 from article.models import Article as ArticleModel
+from article.models import Apply as ApplyModel
+
 
 
 class ArticleSerializer(serializers.ModelSerializer):
@@ -26,12 +28,25 @@ class ArticleSerializer(serializers.ModelSerializer):
             img2=validated_data['img2'],
             img3=validated_data['img3'],
             # exposure_end_date=validated_data['exposure_end_date'],
-            # display_article=validated_data['display_article'],
+            display_article=validated_data['display_article'],
         )
         return article
 
     def update(self, instance, validated_data):
         for key, value in validated_data.items():
+            print(key, value)
             setattr(instance, key, value)
         instance.save()
         return instance
+
+class ArticleApplySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ApplyModel
+        fields = '__all__'
+
+    def create(self, validated_data):
+        apply = ApplyModel.objects.create(
+            user_id=validated_data['user_id'],
+            article_id = validated_data['article_id']
+        )
+        return apply
