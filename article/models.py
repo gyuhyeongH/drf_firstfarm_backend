@@ -43,6 +43,8 @@ class Apply(models.Model):
     article_id = models.ForeignKey(Article, verbose_name="게시글", on_delete=models.SET_NULL, null=True)
     accept = models.BooleanField("신청 수락", default=False)
 
+    def __str__(self):
+        return f"{self.user_id} 님의 [{self.article_id}] 게시글 신청 입니다."
 
 class Review(models.Model):
     user = models.ForeignKey('user.User', verbose_name="작성자", on_delete=models.CASCADE)
