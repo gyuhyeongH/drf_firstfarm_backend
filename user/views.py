@@ -23,15 +23,14 @@ class UserView(APIView):
     
     # 사용자 정보 조회
     def get(self, request):
-        
         user = request.user
-        user_serializer = UserSiginUpSerializer(user).data
+        user_serializer = UserSerializer(user).data
 
         return Response(user_serializer, status=status.HTTP_200_OK)
 
     # 회원가입
     def post(self, request):
-        serializer = UserSiginUpSerializer(data=request.data)
+        serializer = UserSiginUpSerializer(data=request.data, partial=True, context={"request" : request})
 
         if serializer.is_valid(raise_exception=True):
             serializer.save()
@@ -40,12 +39,28 @@ class UserView(APIView):
             return Response({"message": f'${serializer.errors}'}, 400)
 
     # 수정
-    def put(self, request):
-        return Response({'message': 'put method!!'})
+    def put(self, request, obj_id):
+        user = request.user
 
-    # 삭제
-    def delete(self, request):
-        return Response({'message': 'delete method!!'})
+        # username 수정 불가
+        request.data.pop("username", "")
+        user_serializer = UserSiginUpSerializer(user, data=request.data, partial=True)
+
+        if user_serializer.is_valid():
+            user_serializer.save()
+            return Response(user_serializer.data, status=status.HTTP_200_OK)
+
+        return Response({"message": f'${user_serializer.errors}'}, 400)
+
+    # 회원탈퇴 = 삭제
+    def delete(self, request, obj_id):
+        if obj_id is None:
+            return Response("invalid request", status=status.HTTP_400_BAD_REQUEST)
+        else:
+            user_id = obj_id
+            user_object = UserModel.objects.get(id=user_id)
+            user_object.delete()
+            return Response("test ok", status=status.HTTP_200_OK)
 
 
 # 로그아웃 user/api/logout

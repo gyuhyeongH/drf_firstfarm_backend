@@ -76,7 +76,7 @@ class User(AbstractBaseUser):
 # 가입자 상세 정보
 class UserProfile(models.Model):
     user = models.OneToOneField(User, verbose_name="사용자", on_delete=models.CASCADE)
-    prefer =models.CharField(verbose_name="선호하는 것 소개", max_length=128)
+    prefer = models.CharField(verbose_name="선호하는 것 소개", max_length=128)
     rank = models.ForeignKey(Rank, verbose_name="랭크", on_delete=models.SET_NULL, null=True)
 
     fullname = models.CharField(verbose_name="이름", max_length=128)
@@ -91,8 +91,8 @@ class UserProfile(models.Model):
 
     age = models.IntegerField(verbose_name="나이")
     introduction = models.TextField(verbose_name="자기소개", null=True, blank=True)
-    birthday = models.DateField(verbose_name="생일")
-    img = models.ImageField(verbose_name="프로필이미지", upload_to=user, default=datetime.now(), null=True)
+    birthday = models.DateField(verbose_name="생일", null=True)
+    img = models.ImageField(verbose_name="프로필이미지", upload_to=user, null=True)
     phone_number = models.CharField(max_length=20, unique=True)
 
     def __str__(self):
