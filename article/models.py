@@ -11,8 +11,8 @@ class ArticleCategory(models.Model):
 
 
 class Article(models.Model):
-    user_id = models.ForeignKey('user.User', verbose_name="작성자", on_delete=models.CASCADE, null=True)
-    article_category_id = models.ForeignKey(ArticleCategory, verbose_name="카테고리", on_delete=models.SET_NULL, null=True)
+    user = models.ForeignKey('user.User', verbose_name="작성자", on_delete=models.CASCADE, null=True)
+    article_category = models.ForeignKey(ArticleCategory, verbose_name="카테고리", on_delete=models.SET_NULL, null=True)
     farm_name = models.CharField("농장 이름", max_length=16)
     location = models.CharField("위치", max_length=128)
     title = models.CharField("제목", max_length=30)
@@ -39,10 +39,12 @@ class Article(models.Model):
 
 
 class Apply(models.Model):
-    user_id = models.ForeignKey('user.User', verbose_name="작성자", on_delete=models.SET_NULL, null=True)
-    article_id = models.ForeignKey(Article, verbose_name="게시글", on_delete=models.SET_NULL, null=True)
+    user = models.ForeignKey('user.User', verbose_name="작성자", on_delete=models.SET_NULL, null=True)
+    article = models.ForeignKey(Article, verbose_name="게시글", on_delete=models.SET_NULL, null=True)
     accept = models.BooleanField("신청 수락", default=False)
 
+    def __str__(self):
+        return f"{self.user} 님의 [{self.article}] 게시글 신청 입니다."
 
 class Review(models.Model):
     user = models.ForeignKey('user.User', verbose_name="작성자", on_delete=models.CASCADE)
