@@ -5,27 +5,34 @@ from rest_framework import status
 from .models import Article as ArticleModel
 from article.serializers import ArticleSerializer
 from article.serializers import ArticleApplySerializer
-
+import json
 
 class ArticleView(APIView):
     def get(self, request):
-        locations = ['서울','인천']
+        locations = ["서울", "경기", "인천", "강원", "대전", "세종", "충남", "충북",
+                     "부산", "울산", "경남", "경북", "대구", "광주", "전남", "전북", "제주", " "]
         request_front = request.data.get('choice')
+        print(request.data.get("choice"))
+
         articles = ArticleModel.objects.all()
 
         if request_front == '추천':
             recommend_articles = recommends(articles, request.user.userprofile.prefer)  # 추천 시스템 함수
-            Response(recommend_articles, status=status.HTTP_200_OK)
+            recommend_articles_serializer = ArticleSerializer(recommend_articles, many=True).data
+            Response(recommend_articles_serializer, status=status.HTTP_200_OK)
+
         elif request_front in locations:
             location_articles = location_article(articles, request_front)  # 지역 별 함수
-            return Response(location_articles, status=status.HTTP_200_OK)
+            location_articles_serializer = ArticleSerializer(location_articles, many=True).data
+            return Response(location_articles_serializer, status=status.HTTP_200_OK)
 
-        return Response(articles, status=status.HTTP_200_OK)
+        articles_serializer = ArticleSerializer(articles, many=True).data
+        return Response(articles_serializer, status=status.HTTP_200_OK)
 
 
 def recommends(articles, user_prefer):
-    recommend_articles =[]
-    article_info=[]
+    recommend_articles = []
+    article_info = []
     for article in articles:
         article_info.append(article.desc)
     # 코랩에서 user_prefer,articles_info 이용한 코드 작성 밑 테스트 이후 배포할때 추가.
@@ -33,7 +40,7 @@ def recommends(articles, user_prefer):
 
 
 def location_article(articles, request_front):
-    location_articles=[]
+    location_articles = []
     for article in articles:
         if request_front in article.location:
             location_articles.append(article)
@@ -44,7 +51,7 @@ class ArticleDetailView(APIView):
 
     def get(self, request, article_id):
         article = ArticleModel.objects.get(id=article_id)
-    # authentication_classes = [JWTAuthentication]
+        # authentication_classes = [JWTAuthentication]
 
         serializer = ArticleSerializer(article, many=True).data
         return Response(serializer, status=status.HTTP_200_OK)
@@ -80,7 +87,6 @@ class ArticleDetailView(APIView):
     #         return Response({"message": "게시글 마감 실패."}, status=status.HTTP_400_BAD_REQUEST)
 
 
-
 class ArticleApplyView(APIView):
 
     def post(self, request, article_id):
@@ -96,4 +102,3 @@ class ArticleApplyView(APIView):
             return Response({"message": "신청이 완료되었습니다."}, status=status.HTTP_200_OK)
         else:
             return Response({"message": f'${serializer.errors}'}, status=status.HTTP_400_BAD_REQUEST)
-
