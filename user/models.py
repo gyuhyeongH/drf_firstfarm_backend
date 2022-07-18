@@ -3,12 +3,11 @@ from django.contrib.auth.models import BaseUserManager, AbstractBaseUser
 from datetime import datetime, timedelta
 
 
-
 class Rank(models.Model):
     rank_name = models.CharField(verbose_name="사용자 랭크", max_length=50)
 
     def __str__(self):
-        return self.name
+        return self.rank_name
 
 
 class UserCategory(models.Model):
@@ -48,7 +47,7 @@ class User(AbstractBaseUser):
     join_date = models.DateTimeField(verbose_name="가입일", auto_now_add=True)
 
     # user category
-    user_category = models.ForeignKey(UserCategory, verbose_name="카테고리",on_delete=models.SET_NULL,null=True)
+    user_category = models.ForeignKey(UserCategory, verbose_name="카테고리", on_delete=models.SET_NULL, null=True)
 
     is_private = models.BooleanField(default=True)
     is_admin = models.BooleanField(default=False)
@@ -77,11 +76,11 @@ class User(AbstractBaseUser):
 # 가입자 상세 정보
 class UserProfile(models.Model):
     user = models.OneToOneField(User, verbose_name="사용자", on_delete=models.CASCADE)
-    prefer =models.CharField(verbose_name="선호하는 것 소개",max_length=128)
-    rank = models.ForeignKey(Rank, verbose_name="랭크",on_delete=models.SET_NULL,null=True)
+    prefer = models.CharField(verbose_name="선호하는 것 소개", max_length=128)
+    rank = models.ForeignKey(Rank, verbose_name="랭크", on_delete=models.SET_NULL, null=True)
 
-    fullname = models.CharField(verbose_name="이름",max_length=128)
-    location = models.CharField(verbose_name="지역",max_length=128)
+    fullname = models.CharField(verbose_name="이름", max_length=128)
+    location = models.CharField(verbose_name="지역", max_length=128)
 
     GENDERS = (
         ('M', '남성(Man)'),
@@ -92,9 +91,8 @@ class UserProfile(models.Model):
 
     age = models.IntegerField(verbose_name="나이")
     introduction = models.TextField(verbose_name="자기소개", null=True, blank=True)
-    birthday = models.DateField(verbose_name="생일")
-    img = models.ImageField(verbose_name="프로필이미지", upload_to=user,default=datetime
-                             .now(),null=True)
+    birthday = models.DateField(verbose_name="생일", null=True)
+    img = models.ImageField(verbose_name="프로필이미지", upload_to=user, null=True)
     phone_number = models.CharField(max_length=20, unique=True)
 
     def __str__(self):
