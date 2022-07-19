@@ -18,34 +18,34 @@ def get_rate_rank_point(user,rate):
     ps_rank = UserProfileModel.objects.filter(user=user).values("rank_id")[0].get("rank_id")
     UserProfileModel.objects.filter(user=user).update(points=point)
     if point >= 5 and point < 10:
-        UserProfileModel.objects.filter(user=user).update(rank_id=2)
-        if ps_rank > 2:
+        UserProfileModel.objects.filter(user_id=user).update(rank_id=1)
+        if ps_rank > 1:
             return Response("회원님의 등급이 새싹 등급으로 강등되었습니다.", status=status.HTTP_200_OK)
-        elif ps_rank < 2:
+        elif ps_rank < 1:
             return Response("축하합니다. 회원님의 등급이 새싹 등급으로 변경되었습니다.", status=status.HTTP_200_OK)
         else:
             return Response("회원님은 새싹 등급입니다.", status=status.HTTP_200_OK)
     elif point >= 10 and point < 15:
-        UserProfileModel.objects.filter(user=user).update(rank_id=3)
-        if ps_rank > 3:
+        UserProfileModel.objects.filter(user_id=user).update(rank_id=2)
+        if ps_rank > 2:
             return Response("회원님의 등급이 줄기 등급으로 강등되었습니다.", status=status.HTTP_200_OK)
-        elif ps_rank < 3:
+        elif ps_rank < 2:
             return Response("축하합니다. 회원님의 등급이 줄기 등급으로 변경되었습니다.", status=status.HTTP_200_OK)
         else:
             return Response("회원님은 줄기 등급입니다.", status=status.HTTP_200_OK)
     elif point >= 15 and point < 20:
-        UserProfileModel.objects.filter(user=user).update(rank_id=4)
-        if ps_rank > 4:
+        UserProfileModel.objects.filter(user_id=user).update(rank_id=3)
+        if ps_rank > 3:
             return Response("회원님의 등급이 꽃 등급으로 강등되었습니다.", status=status.HTTP_200_OK)
-        elif ps_rank < 4:
+        elif ps_rank < 3:
             return Response("축하합니다. 회원님의 등급이 꽃 등급으로 변경되었습니다.", status=status.HTTP_200_OK)
         else:
             return Response("회원님은 꽃 등급입니다.", status=status.HTTP_200_OK)
     elif point >= 20:
-        UserProfileModel.objects.filter(user=user).update(rank_id=5)
-        if ps_rank > 5:
+        UserProfileModel.objects.filter(user_id=user).update(rank_id=4)
+        if ps_rank > 4:
             return Response("회원님의 등급이 열매 등급으로 강등되었습니다.", status=status.HTTP_200_OK)
-        elif ps_rank < 5:
+        elif ps_rank < 4:
             return Response("축하합니다. 회원님의 등급이 열매 등급으로 변경되었습니다.", status=status.HTTP_200_OK)
         else:
             return Response("회원님은 열매 등급입니다.", status=status.HTTP_200_OK)
@@ -202,43 +202,24 @@ class FarmerMyPageView(APIView):
         data["article"] = article_id
         data["content"] = request.data.get("content", "") #review 내용
         data["rate"] = request.data.get("rate","") # 평점
-        data["img1"] = request.data.get("img1","") # 이 부분 테스트 해보고 2,3 까지 작성
-        data["img2"] = request.data.get("img2", "")  # 이 부분 테스트 해보고 2,3 까지 작성
-        data["img3"] = request.data.get("img3", "")  # 이 부분 테스트 해보고 2,3 까지 작성
+        data["img1"] = request.data.get("img1","")
+        data["img2"] = request.data.get("img2", "")
+        data["img3"] = request.data.get("img3", "")
         review_serializer = ReviewSerializer(data=data)
-        rate = 0
-        if data["rate"] == "5" :
-            rate=2
-        elif data["rate"] == "4" :
-            rate = 1
-        elif data["rate"] == "3" :
-            rate = 0
-        elif data["rate"] == "2" :
-            rate = -1
-        elif data["rate"] == "1" :
-            rate = -2
-        else :
-            rate = 0
-        print(rate)
+        rate = int(data["rate"])- 3
         if review_serializer.is_valid():
             review_serializer.save()
             # 리뷰 작성자 에게는 포인트 3점 추가
             # farmer = request.user.id
             # get_rate_rank_point(farmer,3)
             get_rate_rank_point(1,3) # 임의 user1로 테스트
-            # 리뷰의 평가점수를 농장주에게 추가
+            # # 리뷰의 평가점수를 농장주에게 추가
             farm = ArticleModel.objects.filter(id=article_id).values("user_id")[0].get("user_id")
             get_rate_rank_point(farm,rate)
             return Response({"result": "리뷰 작성 완료!"}, status=status.HTTP_200_OK)
         else:
             return Response({"result": "리뷰 작성 실패!"}, status=status.HTTP_400_BAD_REQUEST)
 
-        # serializer = ReviewSerializer(data=request.data)
-        # if serializer.is_valid():
-        #     serializer.save()
-        #     return Response({"message": "리뷰가 작성되었습니다."}, status=status.HTTP_200_OK)
-        # else:
-        #     return Response({"message": f'${serializer.errors}'}, status=status.HTTP_400_BAD_REQUEST)
 
 
     # 업데이트

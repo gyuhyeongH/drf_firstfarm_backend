@@ -44,13 +44,13 @@ class ArticleApplySerializer(serializers.ModelSerializer):
     def get_userinfo(self, obj):
         return {
             "email":obj.user.email,
-            "fullname": obj.user.userprofile.fullname if obj.user.userprofile else None,
-            "location":obj.user.userprofile.location if obj.user.userprofile else None,
-            "prefer": obj.user.userprofile.prefer if obj.user.userprofile else None,
-            "gender": obj.user.userprofile.gender if obj.user.userprofile else None,
-            "age": obj.user.userprofile.age if obj.user.userprofile else None,
-            "introduction": obj.user.userprofile.introduction if obj.user.userprofile else None,
-            "phone_number": obj.user.userprofile.phone_number if obj.user.userprofile else None,
+            "fullname": obj.user.userprofile.fullname,
+            "location":obj.user.userprofile.location,
+            "prefer": obj.user.userprofile.prefer,
+            "gender": obj.user.userprofile.gender,
+            "age": obj.user.userprofile.age,
+            "introduction": obj.user.userprofile.introduction,
+            "phone_number": obj.user.userprofile.phone_number,
             # "img": obj.user.userprofile.img if obj.user.userprofile else None, <- unicodeDecodeError
         }
     class Meta:
@@ -69,12 +69,12 @@ class UserApplySerializer(serializers.ModelSerializer):
 
     def get_articleinfo(self, obj):
         return {
-            "farm_name":obj.article.farm_name if obj.article else None,
-            "location": obj.article.location if obj.article else None,
-            "title": obj.article.title if obj.article else None,
-            "period": obj.article.period if obj.article else None,
-            "cost": obj.article.cost if obj.article else None,
-            "desc": obj.article.desc if obj.article else None,
+            "farm_name":obj.article.farm_name,
+            "location": obj.article.location ,
+            "title": obj.article.title,
+            "period": obj.article.period,
+            "cost": obj.article.cost,
+            "desc": obj.article.desc,
         }
     class Meta:
         model = ApplyModel
@@ -85,15 +85,3 @@ class ReviewSerializer(serializers.ModelSerializer):
     class Meta:
         model = ReviewModel
         fields = '__all__'
-
-    # def create(self, validated_data):
-    #     review = ArticleModel.objects.create(
-    #         user=validated_data['user'],
-    #         article=validated_data['article_id'],
-    #         rate=validated_data['rate'],
-    #         content=validated_data['content'],
-    #         img1=validated_data['img1'],
-    #         img2=validated_data['img2'],
-    #         img3=validated_data['img3'],
-    #     )
-    #     return review
