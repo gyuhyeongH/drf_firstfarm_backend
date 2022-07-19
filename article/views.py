@@ -10,24 +10,30 @@ from article.serializers import ArticleSerializer
 from article.serializers import ArticleApplySerializer
 
 from article.serializers import ReviewSerializer
+# from konlpy.tag import Mecab
+# from gensim.test.utils import common_texts
+# from gensim.models.doc2vec import Doc2Vec, TaggedDocument
 
 
 class ArticleView(APIView):
     def get(self, request):
         locations = ["서울", "경기", "인천", "강원", "대전", "세종", "충남", "충북",
                      "부산", "울산", "경남", "경북", "대구", "광주", "전남", "전북", "제주", " "]
-        request_front = request.data.get('choice')
-        print(request.data.get("choice"))
+        request_choice = request.data.get('choice')
+        request_article_category = request.data.get('category')
 
-        articles = ArticleModel.objects.all()
+        if request_article_category == '':
+            articles = ArticleModel.objects.all()
+        else:
+            articles = ArticleModel.objects.filter(article_category__name=request_article_category)
 
-        if request_front == '추천':
+        if request_choice == '추천':
             recommend_articles = recommends(articles, request.user.userprofile.prefer)  # 추천 시스템 함수
             recommend_articles_serializer = ArticleSerializer(recommend_articles, many=True).data
             Response(recommend_articles_serializer, status=status.HTTP_200_OK)
 
-        elif request_front in locations:
-            location_articles = location_article(articles, request_front)  # 지역 별 함수
+        elif request_choice in locations:
+            location_articles = location_article(articles, request_choice)  # 지역 별 함수
             location_articles_serializer = ArticleSerializer(location_articles, many=True).data
             return Response(location_articles_serializer, status=status.HTTP_200_OK)
 
@@ -37,10 +43,39 @@ class ArticleView(APIView):
 
 def recommends(articles, user_prefer):
     recommend_articles = []
-    article_info = []
-    for article in articles:
-        article_info.append(article.desc)
-    # 코랩에서 user_prefer,articles_info 이용한 코드 작성 밑 테스트 이후 배포할때 추가.
+    # article_info = []
+    # for article in articles:
+    #     article_info.append(article.desc)
+    #
+    # mecab = Mecab()
+    #
+    # article_info = ['사과 농사 엄청함', '정말 힘든 일들만 골라서함', '귤 나무 구경 가능', '배 수확하는 일합니다', '숨만 쉬고 일합니다', '모내기 일합니다',
+    #                 '한라봉 수확하는 일합니다', '벼 수확하는 일합니다', '옥수수 수확하는 일합니다', '고구마 수확하는 일합니다', '수박 수확하는 일합니다']
+    #
+    # tmp_list = [0] * len(article_info)
+    # stopwords = []
+    #
+    # for i in range(0, len(article_info)):
+    #     tmp = mecab.nouns(article_info[i])
+    #     tokens = []
+    #     for token in tmp:
+    #         if not token in stopwords:
+    #             tokens.append(token)
+    #     tmp_list[i] = tokens
+    #     # article 형태소 분석 완료.
+    #
+    # documents = [TaggedDocument(doc, [i]) for i, doc in enumerate(tmp_list)]
+    #
+    # model = Doc2Vec(documents, vector_size=10, window=1, epochs=1000, min_count=0, workers=4)
+    #
+    # prefer = mecab.nouns(user_prefer)
+    #
+    # inferred_doc_vec = model.infer_vector(prefer)
+    # most_similar_docs = model.docvecs.most_similar([inferred_doc_vec], topn=10)
+    #
+    # for index, similarity in most_similar_docs:
+    #     recommend_articles.append(articles[index])
+
     return recommend_articles
 
 
