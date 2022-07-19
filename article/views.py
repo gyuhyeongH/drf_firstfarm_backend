@@ -3,12 +3,54 @@ import copy
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
+from user.models import User as UserModel
+from user.models import UserProfile as UserProfileModel
 from .models import Article as ArticleModel
 from .models import Apply as ApplyModel
 from .models import Review as ReviewModel
 from article.serializers import ArticleSerializer
-from article.serializers import ArticleApplySerializer
+from article.serializers import ArticleApplySerializer,UserApplySerializer
 from article.serializers import ReviewSerializer
+
+# 평가점수를 point에 더하고 랭크를 변경하는 함수
+def get_rate_rank_point(user,rate):
+    point = UserProfileModel.objects.filter(user=user).values("points")[0].get("points") + rate
+    ps_rank = UserProfileModel.objects.filter(user=user).values("rank_id")[0].get("rank_id")
+    UserProfileModel.objects.filter(user=user).update(points=point)
+    if point >= 5 and point < 10:
+        UserProfileModel.objects.filter(user_id=user).update(rank_id=1)
+        if ps_rank > 1:
+            return Response("회원님의 등급이 새싹 등급으로 강등되었습니다.", status=status.HTTP_200_OK)
+        elif ps_rank < 1:
+            return Response("축하합니다. 회원님의 등급이 새싹 등급으로 변경되었습니다.", status=status.HTTP_200_OK)
+        else:
+            return Response("회원님은 새싹 등급입니다.", status=status.HTTP_200_OK)
+    elif point >= 10 and point < 15:
+        UserProfileModel.objects.filter(user_id=user).update(rank_id=2)
+        if ps_rank > 2:
+            return Response("회원님의 등급이 줄기 등급으로 강등되었습니다.", status=status.HTTP_200_OK)
+        elif ps_rank < 2:
+            return Response("축하합니다. 회원님의 등급이 줄기 등급으로 변경되었습니다.", status=status.HTTP_200_OK)
+        else:
+            return Response("회원님은 줄기 등급입니다.", status=status.HTTP_200_OK)
+    elif point >= 15 and point < 20:
+        UserProfileModel.objects.filter(user_id=user).update(rank_id=3)
+        if ps_rank > 3:
+            return Response("회원님의 등급이 꽃 등급으로 강등되었습니다.", status=status.HTTP_200_OK)
+        elif ps_rank < 3:
+            return Response("축하합니다. 회원님의 등급이 꽃 등급으로 변경되었습니다.", status=status.HTTP_200_OK)
+        else:
+            return Response("회원님은 꽃 등급입니다.", status=status.HTTP_200_OK)
+    elif point >= 20:
+        UserProfileModel.objects.filter(user_id=user).update(rank_id=4)
+        if ps_rank > 4:
+            return Response("회원님의 등급이 열매 등급으로 강등되었습니다.", status=status.HTTP_200_OK)
+        elif ps_rank < 4:
+            return Response("축하합니다. 회원님의 등급이 열매 등급으로 변경되었습니다.", status=status.HTTP_200_OK)
+        else:
+            return Response("회원님은 열매 등급입니다.", status=status.HTTP_200_OK)
+    else:
+        return
 
 class ArticleView(APIView):
     def get(self, request):
@@ -56,6 +98,9 @@ class ArticleDetailView(APIView):
         serializer = ArticleSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
+            # 게시글 작성 시 마다 3점 추가
+            # farm = request.user.id
+            get_rate_rank_point(1,3) # 임의 user1로 테스트
             return Response({"message": "게시글이 작성되었습니다."}, status=status.HTTP_200_OK)
         else:
             return Response({"message": f'${serializer.errors}'}, status=status.HTTP_400_BAD_REQUEST)
@@ -94,6 +139,10 @@ class ArticleApplyView(APIView):
         #     return Response({"error": "로그인 후 이용해주세요"}, status=status.HTTP_400_BAD_REQUEST)
 
         if serializer.is_valid():
+            # farmer가 신청 시 마다 3점 추가
+            # farmer = request.user.id
+            # get_rate_rank_point(farmer,3)
+            get_rate_rank_point(1,3) # 테스트 용 user_id 1 임의로 전달
             serializer.save()
             return Response({"message": "신청이 완료되었습니다."}, status=status.HTTP_200_OK)
         else:
@@ -130,13 +179,7 @@ class FarmApplyView(APIView):
     def get(self, request,article_id):
         applicants = ApplyModel.objects.filter(article=article_id) # 해당 공고에 지원한 지원정보들을 가져옴
         applicants = ArticleApplySerializer(applicants, many=True).data
-
-        # applicants = applicants.get(user_id = request.user_id)
-        # for i=0; i<user.length ; i++ :
-        #     users += applicants[i].article # obj
-        print(applicants)
-
-        return Response(applicants, status=status.HTTP_200_OK) # 해당 공고에 지원한 Applyserializer 정보를 넘겨줌
+        return Response(applicants, status=status.HTTP_200_OK) # 해당 공고에 지원한 ArticleApplyserializer 정보를 넘겨줌
 
 
 #farmer_mypage ~ 신청자가 다녀온 공고 조회, 다녀온 공고의 리뷰 작성, 수정, 삭제
@@ -147,36 +190,35 @@ class FarmerMyPageView(APIView):
         # user = request.user.id # 로그인 한 유저
         user = 1
         apllies = ApplyModel.objects.filter(user=user,accept=True) # 로그인 한 유저가 다녀온 공고들을 가져옴 , queryset
-        # for i=0; i<articles.length ; i++ :
-        #     articles += applies[i].article # obj
-        apllies = ArticleApplySerializer(apllies, many=True).data
-        print(apllies)
+        apllies = UserApplySerializer(apllies, many=True).data
 
-        return Response(apllies, status=status.HTTP_200_OK) # 로그인 한 유저가 다녀온 공고들의 serializer 를 넘겨줌
+        return Response(apllies, status=status.HTTP_200_OK) # 로그인 한 유저가 다녀온 공고들의 UserApplyserializer 정보를 넘겨줌
 
     def post(self, request, article_id):
         data = copy.deepcopy(request.data)
         # data["user"] = request.user.id
-        data["user"] = 1
+        data["user"] = 2
         data["article"] = article_id
         data["content"] = request.data.get("content", "") #review 내용
         data["rate"] = request.data.get("rate","") # 평점
-        data["img1"] = request.data.get("img1","") # 이 부분 테스트 해보고 2,3 까지 작성
-        data["img2"] = request.data.get("img2", "")  # 이 부분 테스트 해보고 2,3 까지 작성
-        data["img3"] = request.data.get("img3", "")  # 이 부분 테스트 해보고 2,3 까지 작성
+        data["img1"] = request.data.get("img1","")
+        data["img2"] = request.data.get("img2", "")
+        data["img3"] = request.data.get("img3", "")
         review_serializer = ReviewSerializer(data=data)
+        rate = int(data["rate"])- 3
         if review_serializer.is_valid():
             review_serializer.save()
+            # 리뷰 작성자 에게는 포인트 3점 추가
+            # farmer = request.user.id
+            # get_rate_rank_point(farmer,3)
+            get_rate_rank_point(1,3) # 임의 user1로 테스트
+            # # 리뷰의 평가점수를 농장주에게 추가
+            farm = ArticleModel.objects.filter(id=article_id).values("user_id")[0].get("user_id")
+            get_rate_rank_point(farm,rate)
             return Response({"result": "리뷰 작성 완료!"}, status=status.HTTP_200_OK)
         else:
             return Response({"result": "리뷰 작성 실패!"}, status=status.HTTP_400_BAD_REQUEST)
 
-        # serializer = ReviewSerializer(data=request.data)
-        # if serializer.is_valid():
-        #     serializer.save()
-        #     return Response({"message": "리뷰가 작성되었습니다."}, status=status.HTTP_200_OK)
-        # else:
-        #     return Response({"message": f'${serializer.errors}'}, status=status.HTTP_400_BAD_REQUEST)
 
 
     # 업데이트
