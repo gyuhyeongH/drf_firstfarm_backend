@@ -4,7 +4,6 @@ from article.models import Article as ArticleModel
 from article.models import Apply as ApplyModel
 from article.models import Review as ReviewModel
 
-
 class ArticleSerializer(serializers.ModelSerializer):
     class Meta:
         model = ArticleModel
@@ -40,17 +39,23 @@ class ArticleSerializer(serializers.ModelSerializer):
         return instance
 
 class ArticleApplySerializer(serializers.ModelSerializer):
-    username = serializers.SerializerMethodField(read_only=True)
+    userinfo = serializers.SerializerMethodField(read_only=True)
 
-    def get_username(self, obj):
+    def get_userinfo(self, obj):
         return {
-            "username":obj.user.username,
             "email":obj.user.email,
-            # "location":obj.user.userprofile.location if obj.user.userprofile else None, <- 현재 userprofile 데이터가 없음.
+            "fullname": obj.user.userprofile.fullname if obj.user.userprofile else None,
+            "location":obj.user.userprofile.location if obj.user.userprofile else None,
+            "prefer": obj.user.userprofile.prefer if obj.user.userprofile else None,
+            "gender": obj.user.userprofile.gender if obj.user.userprofile else None,
+            "age": obj.user.userprofile.age if obj.user.userprofile else None,
+            "introduction": obj.user.userprofile.introduction if obj.user.userprofile else None,
+            "phone_number": obj.user.userprofile.phone_number if obj.user.userprofile else None,
+            # "img": obj.user.userprofile.img if obj.user.userprofile else None, <- unicodeDecodeError
         }
     class Meta:
         model = ApplyModel
-        fields = ["user","article","accept","username"]
+        fields = ["user","article","accept","userinfo"]
 
     def create(self, validated_data):
         apply = ApplyModel.objects.create(
@@ -58,6 +63,22 @@ class ArticleApplySerializer(serializers.ModelSerializer):
             article = validated_data['article_id']
         )
         return apply
+
+class UserApplySerializer(serializers.ModelSerializer):
+    articleinfo = serializers.SerializerMethodField(read_only=True)
+
+    def get_articleinfo(self, obj):
+        return {
+            "farm_name":obj.article.farm_name if obj.article else None,
+            "location": obj.article.location if obj.article else None,
+            "title": obj.article.title if obj.article else None,
+            "period": obj.article.period if obj.article else None,
+            "cost": obj.article.cost if obj.article else None,
+            "desc": obj.article.desc if obj.article else None,
+        }
+    class Meta:
+        model = ApplyModel
+        fields = ["user","article","accept","articleinfo"]
 
 # ReviewSerializer
 class ReviewSerializer(serializers.ModelSerializer):
