@@ -1,4 +1,6 @@
 from rest_framework import serializers
+from rest_framework.validators import UniqueValidator
+
 from user.models import (
     User as UserModel,
     UserProfile as UserProfileModel,
@@ -48,6 +50,8 @@ class UserSerializer(serializers.ModelSerializer):
 
 class UserSiginUpSerializer(serializers.ModelSerializer):
 
+    userprofile = UserProfileSerializer()
+
     class Meta:
         model = UserModel
         fields = [ "username", "password", "email", "user_category", "join_date", "userprofile" ]
@@ -55,8 +59,16 @@ class UserSiginUpSerializer(serializers.ModelSerializer):
         extra_kwargs = {
             # write_only : 해당 필드를 쓰기 전용으로 만들어 준다.
             # 쓰기 전용으로 설정 된 필드는 직렬화 된 데이터에서 보여지지 않는다.
-            "password": {'write_only': True}, # default : False
+            'password': {
+                'write_only': True,
+                },
+            "username": {
+                # 유효성 검사
+                'validators': [UniqueValidator(queryset=UserModel.objects.all())]
+                },
             "email": {
+                # 유효성 검사
+                'validators': [UniqueValidator(queryset=UserModel.objects.all())],
                 # error_messages : 에러 메세지를 자유롭게 설정 할 수 있다.
                 'error_messages': {
                     # required : 값이 입력되지 않았을 때 보여지는 메세지
@@ -66,14 +78,9 @@ class UserSiginUpSerializer(serializers.ModelSerializer):
                     },
                     # required : validator에서 해당 값의 필요 여부를 판단한다.
                     'required': False # default : True
-                    },
+                },
             }
 
-    # username = serializers.CharField(required=True, min_length=4)
-    # email = serializers.EmailField(required=True)
-    # password = serializers.CharField(required=True, min_length=4)
-
-    userprofile = UserProfileSerializer()
 
     def create(self, validated_data):
         # User object 생성

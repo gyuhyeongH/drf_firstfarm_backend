@@ -36,7 +36,8 @@ class UserView(APIView):
             serializer.save()
             return Response(serializer.data, status=status.HTTP_200_OK)
         else:
-            return Response({"message": f'${serializer.errors}'}, 400)
+            # return Response({"message": f'${serializer.errors}'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(data="INFO_INVALID", status=status.HTTP_400_BAD_REQUEST)
 
     # 수정
     def put(self, request, obj_id):

@@ -95,5 +95,7 @@ class UserProfile(models.Model):
     img = models.ImageField(verbose_name="프로필이미지", upload_to=user, null=True)
     phone_number = models.CharField(max_length=20, unique=True)
 
+    points = models.PositiveIntegerField(verbose_name="사용자 등급 점수", default=0)
+
     def __str__(self):
         return f"{self.user.username} 님의 프로필입니다."
