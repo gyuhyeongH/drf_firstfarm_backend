@@ -9,8 +9,13 @@ from .models import Article as ArticleModel
 from .models import Apply as ApplyModel
 from .models import Review as ReviewModel
 from article.serializers import ArticleSerializer
+
 from article.serializers import ArticleApplySerializer,UserApplySerializer
 from article.serializers import ReviewSerializer
+# from konlpy.tag import Mecab
+# from gensim.test.utils import common_texts
+# from gensim.models.doc2vec import Doc2Vec, TaggedDocument
+
 
 # 평가점수를 point에 더하고 랭크를 변경하는 함수
 def get_rate_rank_point(user,rate):
@@ -54,31 +59,70 @@ def get_rate_rank_point(user,rate):
 
 class ArticleView(APIView):
     def get(self, request):
-        locations = ['서울','인천']
-        request_front = request.data.get('choice')
-        articles = ArticleModel.objects.all()
+        locations = ["서울", "경기", "인천", "강원", "대전", "세종", "충남", "충북",
+                     "부산", "울산", "경남", "경북", "대구", "광주", "전남", "전북", "제주", " "]
+        request_choice = request.data.get('choice')
+        request_article_category = request.data.get('category')
 
-        if request_front == '추천':
+        if request_article_category == '':
+            articles = ArticleModel.objects.all()
+        else:
+            articles = ArticleModel.objects.filter(article_category__name=request_article_category)
+
+        if request_choice == '추천':
             recommend_articles = recommends(articles, request.user.userprofile.prefer)  # 추천 시스템 함수
-            Response(recommend_articles, status=status.HTTP_200_OK)
-        elif request_front in locations:
-            location_articles = location_article(articles, request_front)  # 지역 별 함수
-            return Response(location_articles, status=status.HTTP_200_OK)
+            recommend_articles_serializer = ArticleSerializer(recommend_articles, many=True).data
+            Response(recommend_articles_serializer, status=status.HTTP_200_OK)
 
-        return Response(articles, status=status.HTTP_200_OK)
+        elif request_choice in locations:
+            location_articles = location_article(articles, request_choice)  # 지역 별 함수
+            location_articles_serializer = ArticleSerializer(location_articles, many=True).data
+            return Response(location_articles_serializer, status=status.HTTP_200_OK)
+
+        articles_serializer = ArticleSerializer(articles, many=True).data
+        return Response(articles_serializer, status=status.HTTP_200_OK)
 
 
 def recommends(articles, user_prefer):
-    recommend_articles =[]
-    article_info=[]
-    for article in articles:
-        article_info.append(article.desc)
-    # 코랩에서 user_prefer,articles_info 이용한 코드 작성 밑 테스트 이후 배포할때 추가.
+    recommend_articles = []
+    # article_info = []
+    # for article in articles:
+    #     article_info.append(article.desc)
+    #
+    # mecab = Mecab()
+    #
+    # article_info = ['사과 농사 엄청함', '정말 힘든 일들만 골라서함', '귤 나무 구경 가능', '배 수확하는 일합니다', '숨만 쉬고 일합니다', '모내기 일합니다',
+    #                 '한라봉 수확하는 일합니다', '벼 수확하는 일합니다', '옥수수 수확하는 일합니다', '고구마 수확하는 일합니다', '수박 수확하는 일합니다']
+    #
+    # tmp_list = [0] * len(article_info)
+    # stopwords = []
+    #
+    # for i in range(0, len(article_info)):
+    #     tmp = mecab.nouns(article_info[i])
+    #     tokens = []
+    #     for token in tmp:
+    #         if not token in stopwords:
+    #             tokens.append(token)
+    #     tmp_list[i] = tokens
+    #     # article 형태소 분석 완료.
+    #
+    # documents = [TaggedDocument(doc, [i]) for i, doc in enumerate(tmp_list)]
+    #
+    # model = Doc2Vec(documents, vector_size=10, window=1, epochs=1000, min_count=0, workers=4)
+    #
+    # prefer = mecab.nouns(user_prefer)
+    #
+    # inferred_doc_vec = model.infer_vector(prefer)
+    # most_similar_docs = model.docvecs.most_similar([inferred_doc_vec], topn=10)
+    #
+    # for index, similarity in most_similar_docs:
+    #     recommend_articles.append(articles[index])
+
     return recommend_articles
 
 
 def location_article(articles, request_front):
-    location_articles=[]
+    location_articles = []
     for article in articles:
         if request_front in article.location:
             location_articles.append(article)
@@ -89,7 +133,7 @@ class ArticleDetailView(APIView):
 
     def get(self, request, article_id):
         article = ArticleModel.objects.get(id=article_id)
-    # authentication_classes = [JWTAuthentication]
+        # authentication_classes = [JWTAuthentication]
 
         serializer = ArticleSerializer(article, many=True).data
         return Response(serializer, status=status.HTTP_200_OK)
@@ -128,7 +172,6 @@ class ArticleDetailView(APIView):
     #         return Response({"message": "게시글 마감 실패."}, status=status.HTTP_400_BAD_REQUEST)
 
 
-
 class ArticleApplyView(APIView):
 
     def post(self, request, article_id):
@@ -148,6 +191,7 @@ class ArticleApplyView(APIView):
             return Response({"message": "신청이 완료되었습니다."}, status=status.HTTP_200_OK)
         else:
             return Response({"message": f'${serializer.errors}'}, status=status.HTTP_400_BAD_REQUEST)
+
 
 
 #farm_mypage ~ 자신이 올린 공고 조회
@@ -252,5 +296,6 @@ class FarmerReviewView(APIView):
         reviews = ReviewModel.objects.filter(user=user) # 로그인 한 유저가 작성한 리뷰들을 가져옴
         serialized_data = ReviewSerializer(reviews, many=True).data  # queryset
         return Response(serialized_data, status=status.HTTP_200_OK)
+
 
 
