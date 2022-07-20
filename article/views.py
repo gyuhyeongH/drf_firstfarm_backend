@@ -135,7 +135,7 @@ class ArticleDetailView(APIView):
         article = ArticleModel.objects.get(id=article_id)
         # authentication_classes = [JWTAuthentication]
 
-        serializer = ArticleSerializer(article, many=True).data
+        serializer = ArticleSerializer(article).data
         return Response(serializer, status=status.HTTP_200_OK)
 
     def post(self, request):
