@@ -1,9 +1,9 @@
 from django.contrib import admin
-from django.urls import path, include
+from django.urls import path
 from . import views
 
-
 urlpatterns = [
+    # article/
     path('', views.ArticleView.as_view(), name='article_view'),
 
     path('detail/', views.ArticleDetailView.as_view()),
