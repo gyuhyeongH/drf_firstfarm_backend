@@ -128,14 +128,14 @@ def location_article(articles, request_front):
             location_articles.append(article)
     return location_articles
 
-
+# Create your views here.
 class ArticleDetailView(APIView):
 
     def get(self, request, article_id):
         article = ArticleModel.objects.get(id=article_id)
         # authentication_classes = [JWTAuthentication]
 
-        serializer = ArticleSerializer(article, many=True).data
+        serializer = ArticleSerializer(article).data
         return Response(serializer, status=status.HTTP_200_OK)
 
     def post(self, request):
