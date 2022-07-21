@@ -59,28 +59,29 @@ def get_rate_rank_point(user,rate):
 
 class ArticleView(APIView):
     def get(self, request):
-        locations = ["서울", "경기", "인천", "강원", "대전", "세종", "충남", "충북",
-                     "부산", "울산", "경남", "경북", "대구", "광주", "전남", "전북", "제주", " "]
-        request_choice = request.data.get('choice')
+        request_location_choice = request.data.get('choice')
         request_article_category = request.data.get('category')
 
         if request_article_category == '':
             articles = ArticleModel.objects.all()
+            articles_serializer = ArticleSerializer(articles, many=True).data
+            print(1)
+            return Response(articles_serializer, status=status.HTTP_200_OK)
+
+        elif request_article_category == '추천':
+            articles = ArticleModel.objects.all()
+            recommend_articles = recommends(articles, request.user.userprofile.prefer)  # 추천 시스템 함수
+            location_articles = location_article(recommend_articles, request_location_choice)
+            recommend_articles_serializer = ArticleSerializer(location_articles, many=True).data
+            print(2)
+            return Response(recommend_articles_serializer, status=status.HTTP_200_OK)
+
         else:
             articles = ArticleModel.objects.filter(article_category__name=request_article_category)
-
-        if request_choice == '추천':
-            recommend_articles = recommends(articles, request.user.userprofile.prefer)  # 추천 시스템 함수
-            recommend_articles_serializer = ArticleSerializer(recommend_articles, many=True).data
-            Response(recommend_articles_serializer, status=status.HTTP_200_OK)
-
-        elif request_choice in locations:
-            location_articles = location_article(articles, request_choice)  # 지역 별 함수
-            location_articles_serializer = ArticleSerializer(location_articles, many=True).data
-            return Response(location_articles_serializer, status=status.HTTP_200_OK)
-
-        articles_serializer = ArticleSerializer(articles, many=True).data
-        return Response(articles_serializer, status=status.HTTP_200_OK)
+            location_articles = location_article(articles, request_location_choice)
+            articles_serializer = ArticleSerializer(location_articles, many=True).data
+            print(3)
+            return Response(articles_serializer, status=status.HTTP_200_OK)
 
 
 def recommends(articles, user_prefer):
