@@ -1,3 +1,4 @@
+from django.db.models import Q
 from django.shortcuts import render
 import copy
 from rest_framework.views import APIView
@@ -62,29 +63,36 @@ class ArticleView(APIView):
     def get(self, request):
         request_location_choice = request.headers.get('choice')
         request_article_category = request.headers.get('category')
-        print(request_location_choice)
-        location_list=['서울','대전','대구','a','b','c','1','2','3']
+
+        location_list=['','서울','대전','대구','b','','1','2','3']
         try:
             request_location_choice = location_list[int(request_location_choice)]
         except:
             pass
 
-        if request_article_category == '':
+        if request_article_category == '' and request_location_choice is None:
             articles = ArticleModel.objects.all()
             articles_serializer = ArticleSerializer(articles, many=True).data
+
+            return Response(articles_serializer, status=status.HTTP_200_OK)
+
+        elif request_article_category == '' and request_location_choice is not None:
+            articles = ArticleModel.objects.filter(location__contains=request_location_choice)
+            articles_serializer = ArticleSerializer(articles, many=True).data
+
             return Response(articles_serializer, status=status.HTTP_200_OK)
 
         elif request_article_category == '3':
             articles = ArticleModel.objects.all()
             recommend_articles = recommends(articles, request.user.userprofile.prefer)  # 추천 시스템 함수
-            location_articles = location_article(recommend_articles, request_location_choice)
-            recommend_articles_serializer = ArticleSerializer(location_articles, many=True).data
+            recommend_articles_serializer = ArticleSerializer(recommend_articles, many=True).data
+
             return Response(recommend_articles_serializer, status=status.HTTP_200_OK)
 
         else:
-            articles = ArticleModel.objects.filter(article_category=request_article_category)
-            location_articles = location_article(articles, request_location_choice)
-            articles_serializer = ArticleSerializer(location_articles, many=True).data
+            articles = ArticleModel.objects.filter(Q(article_category=request_article_category) & Q(location__contains=request_location_choice))
+            articles_serializer = ArticleSerializer(articles, many=True).data
+
             return Response(articles_serializer, status=status.HTTP_200_OK)
 
 
@@ -125,13 +133,6 @@ def recommends(articles, user_prefer):
 
     return recommend_articles
 
-
-def location_article(articles, request_front):
-    location_articles = []
-    for article in articles:
-        if request_front in article.location:
-            location_articles.append(article)
-    return location_articles
 
 # Create your views here.
 class ArticleDetailView(APIView):
