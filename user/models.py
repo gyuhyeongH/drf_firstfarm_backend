@@ -94,6 +94,7 @@ class UserProfile(models.Model):
     birthday = models.DateField(verbose_name="생일", null=True)
     img = models.ImageField(verbose_name="프로필이미지", upload_to=user, null=True)
     phone_number = models.CharField(max_length=20, unique=True)
+    points = models.IntegerField(verbose_name="포인트",default=0)
 
     points = models.PositiveIntegerField(verbose_name="사용자 등급 점수", default=0)
 
