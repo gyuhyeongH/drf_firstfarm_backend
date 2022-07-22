@@ -1,3 +1,4 @@
+from django.db.models import Q
 from django.shortcuts import render
 import copy
 from rest_framework.views import APIView
@@ -61,28 +62,39 @@ def get_rate_rank_point(user, rate):
 
 class ArticleView(APIView):
     def get(self, request):
-        locations = ["서울", "경기", "인천", "강원", "대전", "세종", "충남", "충북",
-                     "부산", "울산", "경남", "경북", "대구", "광주", "전남", "전북", "제주", " "]
-        request_choice = request.data.get('choice')
-        request_article_category = request.data.get('category')
+        request_location_choice = request.headers.get('choice')
+        request_article_category = request.headers.get('category')
 
-        if request_article_category == '':
+        location_list=['','서울','대전','대구','b','','1','2','3']
+        try:
+            request_location_choice = location_list[int(request_location_choice)]
+        except:
+            pass
+
+        if request_article_category == '' and request_location_choice is None:
             articles = ArticleModel.objects.all()
-        else:
-            articles = ArticleModel.objects.filter(article_category__name=request_article_category)
+            articles_serializer = ArticleSerializer(articles, many=True).data
 
-        if request_choice == '추천':
+            return Response(articles_serializer, status=status.HTTP_200_OK)
+
+        elif request_article_category == '' and request_location_choice is not None:
+            articles = ArticleModel.objects.filter(location__contains=request_location_choice)
+            articles_serializer = ArticleSerializer(articles, many=True).data
+
+            return Response(articles_serializer, status=status.HTTP_200_OK)
+
+        elif request_article_category == '3':
+            articles = ArticleModel.objects.all()
             recommend_articles = recommends(articles, request.user.userprofile.prefer)  # 추천 시스템 함수
             recommend_articles_serializer = ArticleSerializer(recommend_articles, many=True).data
-            Response(recommend_articles_serializer, status=status.HTTP_200_OK)
 
-        elif request_choice in locations:
-            location_articles = location_article(articles, request_choice)  # 지역 별 함수
-            location_articles_serializer = ArticleSerializer(location_articles, many=True).data
-            return Response(location_articles_serializer, status=status.HTTP_200_OK)
+            return Response(recommend_articles_serializer, status=status.HTTP_200_OK)
 
-        articles_serializer = ArticleSerializer(articles, many=True).data
-        return Response(articles_serializer, status=status.HTTP_200_OK)
+        else:
+            articles = ArticleModel.objects.filter(Q(article_category=request_article_category) & Q(location__contains=request_location_choice))
+            articles_serializer = ArticleSerializer(articles, many=True).data
+
+            return Response(articles_serializer, status=status.HTTP_200_OK)
 
 
 def recommends(articles, user_prefer):
@@ -123,14 +135,6 @@ def recommends(articles, user_prefer):
     return recommend_articles
 
 
-def location_article(articles, request_front):
-    location_articles = []
-    for article in articles:
-        if request_front in article.location:
-            location_articles.append(article)
-    return location_articles
-
-
 # Create your views here.
 class ArticleDetailView(APIView):
 
@@ -153,6 +157,7 @@ class ArticleDetailView(APIView):
             serializer.save()
             # 게시글 작성 시 마다 3점 추가
             # farm = request.user.id
+
             get_rate_rank_point(1, 3)  # 임의 user1로 테스트
             return Response({"message": "게시글이 작성되었습니다."}, status=status.HTTP_200_OK)
         else:
