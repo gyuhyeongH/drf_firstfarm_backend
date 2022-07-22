@@ -11,11 +11,12 @@ class ArticleSerializer(serializers.ModelSerializer):
 
     farm_name = serializers.CharField(required=True, min_length=2)
     title = serializers.CharField(required=True, min_length=4)
+    display_article = serializers.BooleanField(default=True)
 
     def create(self, validated_data):
         article = ArticleModel.objects.create(
-            user=validated_data['user_id'],
-            article_category=validated_data['article_category_id'],
+            user=validated_data['user'],
+            article_category=validated_data['article_category'],
             farm_name=validated_data['farm_name'],
             location=validated_data['location'],
             title=validated_data['title'],
@@ -29,6 +30,7 @@ class ArticleSerializer(serializers.ModelSerializer):
             # exposure_end_date=validated_data['exposure_end_date'],
             display_article=validated_data['display_article'],
         )
+
         return article
 
     def update(self, instance, validated_data):
