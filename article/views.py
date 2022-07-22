@@ -10,15 +10,16 @@ from .models import Apply as ApplyModel
 from .models import Review as ReviewModel
 from article.serializers import ArticleSerializer
 
-from article.serializers import ArticleApplySerializer,UserApplySerializer
+from article.serializers import ArticleApplySerializer, UserApplySerializer
 from article.serializers import ReviewSerializer
 # from konlpy.tag import Mecab
 # from gensim.test.utils import common_texts
 # from gensim.models.doc2vec import Doc2Vec, TaggedDocument
+import json
 
 
 # 평가점수를 point에 더하고 랭크를 변경하는 함수
-def get_rate_rank_point(user,rate):
+def get_rate_rank_point(user, rate):
     point = UserProfileModel.objects.filter(user=user).values("points")[0].get("points") + rate
     ps_rank = UserProfileModel.objects.filter(user=user).values("rank_id")[0].get("rank_id")
     UserProfileModel.objects.filter(user=user).update(points=point)
@@ -56,6 +57,7 @@ def get_rate_rank_point(user,rate):
             return Response("회원님은 열매 등급입니다.", status=status.HTTP_200_OK)
     else:
         return
+
 
 class ArticleView(APIView):
     def get(self, request):
@@ -128,6 +130,7 @@ def location_article(articles, request_front):
             location_articles.append(article)
     return location_articles
 
+
 # Create your views here.
 class ArticleDetailView(APIView):
 
@@ -139,12 +142,18 @@ class ArticleDetailView(APIView):
         return Response(serializer, status=status.HTTP_200_OK)
 
     def post(self, request):
+        if request.data['img2'] == 'undefined' or request.data['img2'] is None:
+            request.data['img2'] = None
+
+        if request.data['img3'] == 'undefined' or request.data['img3'] is None:
+            request.data['img3'] = None
+
         serializer = ArticleSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
             # 게시글 작성 시 마다 3점 추가
             # farm = request.user.id
-            get_rate_rank_point(1,3) # 임의 user1로 테스트
+            get_rate_rank_point(1, 3)  # 임의 user1로 테스트
             return Response({"message": "게시글이 작성되었습니다."}, status=status.HTTP_200_OK)
         else:
             return Response({"message": f'${serializer.errors}'}, status=status.HTTP_400_BAD_REQUEST)
@@ -186,25 +195,24 @@ class ArticleApplyView(APIView):
             # farmer가 신청 시 마다 3점 추가
             # farmer = request.user.id
             # get_rate_rank_point(farmer,3)
-            get_rate_rank_point(1,3) # 테스트 용 user_id 1 임의로 전달
+            get_rate_rank_point(1, 3)  # 테스트 용 user_id 1 임의로 전달
             serializer.save()
             return Response({"message": "신청이 완료되었습니다."}, status=status.HTTP_200_OK)
         else:
             return Response({"message": f'${serializer.errors}'}, status=status.HTTP_400_BAD_REQUEST)
 
 
-
-#farm_mypage ~ 자신이 올린 공고 조회
+# farm_mypage ~ 자신이 올린 공고 조회
 class FarmMyPageView(APIView):
     # authentication_classes = [JWTAuthentication]
 
     def get(self, request):
         # user = request.user.id # 로그인 한 유저
         user = 2
-        articles = ArticleModel.objects.filter(user=user) # 로그인 한 유저가 올린 공고들을 가져옴
+        articles = ArticleModel.objects.filter(user=user)  # 로그인 한 유저가 올린 공고들을 가져옴
         articles = ArticleSerializer(articles, many=True).data
 
-        return Response(articles, status=status.HTTP_200_OK) # 로그인 한 유저가 올린 공고들의 serializer 를 넘겨줌
+        return Response(articles, status=status.HTTP_200_OK)  # 로그인 한 유저가 올린 공고들의 serializer 를 넘겨줌
 
     # 삭제 부분은 디테일 페이지에서 구현 되어있어서 우선 지워둠.
     # def delete(self, request, article_id):
@@ -217,54 +225,53 @@ class FarmMyPageView(APIView):
     #     else:
     #         return Response({"message": "공고 삭제를 실패했습니다."},status=status.HTTP_400_BAD_REQUEST)
 
+
 # farm_mypage ~ 자신이 올린 공고중 특정 공고에 지원한 신청자 조회
 class FarmApplyView(APIView):
     # authentication_classes = [JWTAuthentication]
 
-    def get(self, request,article_id):
-        applicants = ApplyModel.objects.filter(article=article_id) # 해당 공고에 지원한 지원정보들을 가져옴
+    def get(self, request, article_id):
+        applicants = ApplyModel.objects.filter(article=article_id)  # 해당 공고에 지원한 지원정보들을 가져옴
         applicants = ArticleApplySerializer(applicants, many=True).data
-        return Response(applicants, status=status.HTTP_200_OK) # 해당 공고에 지원한 ArticleApplyserializer 정보를 넘겨줌
+        return Response(applicants, status=status.HTTP_200_OK)  # 해당 공고에 지원한 ArticleApplyserializer 정보를 넘겨줌
 
 
-#farmer_mypage ~ 신청자가 다녀온 공고 조회, 다녀온 공고의 리뷰 작성, 수정, 삭제
+# farmer_mypage ~ 신청자가 다녀온 공고 조회, 다녀온 공고의 리뷰 작성, 수정, 삭제
 class FarmerMyPageView(APIView):
     # authentication_classes = [JWTAuthentication]
 
     def get(self, request):
         # user = request.user.id # 로그인 한 유저
         user = 1
-        apllies = ApplyModel.objects.filter(user=user,accept=True) # 로그인 한 유저가 다녀온 공고들을 가져옴 , queryset
+        apllies = ApplyModel.objects.filter(user=user, accept=True)  # 로그인 한 유저가 다녀온 공고들을 가져옴 , queryset
         apllies = UserApplySerializer(apllies, many=True).data
 
-        return Response(apllies, status=status.HTTP_200_OK) # 로그인 한 유저가 다녀온 공고들의 UserApplyserializer 정보를 넘겨줌
+        return Response(apllies, status=status.HTTP_200_OK)  # 로그인 한 유저가 다녀온 공고들의 UserApplyserializer 정보를 넘겨줌
 
     def post(self, request, article_id):
         data = copy.deepcopy(request.data)
         # data["user"] = request.user.id
         data["user"] = 2
         data["article"] = article_id
-        data["content"] = request.data.get("content", "") #review 내용
-        data["rate"] = request.data.get("rate","") # 평점
-        data["img1"] = request.data.get("img1","")
+        data["content"] = request.data.get("content", "")  # review 내용
+        data["rate"] = request.data.get("rate", "")  # 평점
+        data["img1"] = request.data.get("img1", "")
         data["img2"] = request.data.get("img2", "")
         data["img3"] = request.data.get("img3", "")
         review_serializer = ReviewSerializer(data=data)
-        rate = int(data["rate"])- 3
+        rate = int(data["rate"]) - 3
         if review_serializer.is_valid():
             review_serializer.save()
             # 리뷰 작성자 에게는 포인트 3점 추가
             # farmer = request.user.id
             # get_rate_rank_point(farmer,3)
-            get_rate_rank_point(1,3) # 임의 user1로 테스트
+            get_rate_rank_point(1, 3)  # 임의 user1로 테스트
             # # 리뷰의 평가점수를 농장주에게 추가
             farm = ArticleModel.objects.filter(id=article_id).values("user_id")[0].get("user_id")
-            get_rate_rank_point(farm,rate)
+            get_rate_rank_point(farm, rate)
             return Response({"result": "리뷰 작성 완료!"}, status=status.HTTP_200_OK)
         else:
             return Response({"result": "리뷰 작성 실패!"}, status=status.HTTP_400_BAD_REQUEST)
-
-
 
     # 업데이트
     def put(self, request, review_id):
@@ -286,16 +293,14 @@ class FarmerMyPageView(APIView):
         else:
             return Response({"message": "리뷰 삭제 실패."}, status=status.HTTP_400_BAD_REQUEST)
 
-#farmer_mypage ~ 신청자가 작성한 리뷰 조회
+
+# farmer_mypage ~ 신청자가 작성한 리뷰 조회
 class FarmerReviewView(APIView):
     # authentication_classes = [JWTAuthentication]
 
     def get(self, request):
         # user = request.user.id # 로그인 한 유저
         user = 1
-        reviews = ReviewModel.objects.filter(user=user) # 로그인 한 유저가 작성한 리뷰들을 가져옴
+        reviews = ReviewModel.objects.filter(user=user)  # 로그인 한 유저가 작성한 리뷰들을 가져옴
         serialized_data = ReviewSerializer(reviews, many=True).data  # queryset
         return Response(serialized_data, status=status.HTTP_200_OK)
-
-
-
