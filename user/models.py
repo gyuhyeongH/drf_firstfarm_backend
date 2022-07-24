@@ -96,5 +96,7 @@ class UserProfile(models.Model):
     phone_number = models.CharField(max_length=20, unique=True)
     points = models.IntegerField(verbose_name="포인트",default=0)
 
+    points = models.PositiveIntegerField(verbose_name="사용자 등급 점수", default=0)
+
     def __str__(self):
         return f"{self.user.username} 님의 프로필입니다."
