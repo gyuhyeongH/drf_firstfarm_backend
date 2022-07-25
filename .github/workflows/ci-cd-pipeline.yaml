@@ -12,7 +12,10 @@ jobs:
         with:
           python-version: "3.8"
       - run: pip install -r requirements.txt
-      - run: python manage.py test
+      - name: Run Tests
+        env:
+          SECRET_KEY: ${{secrets.SECRET_KEY}}
+        run: python manage.py test
   build-image:
     needs: run-test-code
     runs-on: ubuntu-latest
