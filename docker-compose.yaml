@@ -11,7 +11,7 @@ services:
     depends_on:
       - web
   web:
-    build: .
+    build: /first_farm_backend
     command: gunicorn first_farm_backend.wsgi:application --bind 0.0.0.0:8000
     ports:
       - 8000:8000
