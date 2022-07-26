@@ -1,0 +1,30 @@
+version: "3.8"
+
+services:
+  nginx:
+    build: ./nginx
+    volumes:
+      - static_volume:/usr/src/app/static
+      - media_volume:/usr/src/app/media
+    ports:
+       - 80:80
+    depends_on:
+      - web
+  web:
+    build: .
+    command: gunicorn first_farm_backend.wsgi:application --bind 0.0.0.0:8000
+    ports:
+      - 8000:8000
+    working_dir: /usr/src/app/
+    volumes:
+      - ./:/usr/src/app/
+      - static_volume:/usr/src/app/static
+      - media_volume:/usr/src/app/media
+    expose:
+      - 8000
+    depends_on:
+      - db
+
+volumes:
+  static_volume:
+  media_volume:
