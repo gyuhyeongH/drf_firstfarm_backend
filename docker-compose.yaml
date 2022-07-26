@@ -22,8 +22,7 @@ services:
       - media_volume:/usr/src/app/media
     expose:
       - 8000
-    depends_on:
-      - db
+
 
 volumes:
   static_volume:
