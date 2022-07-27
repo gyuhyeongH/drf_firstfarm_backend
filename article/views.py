@@ -13,10 +13,12 @@ from article.serializers import ArticleSerializer
 
 from article.serializers import ArticleApplySerializer, UserApplySerializer
 from article.serializers import ReviewSerializer
-# from konlpy.tag import Mecab
-# from gensim.test.utils import common_texts
-# from gensim.models.doc2vec import Doc2Vec, TaggedDocument
-import json
+try:
+    from konlpy.tag import Mecab
+    from gensim.test.utils import common_texts
+    from gensim.models.doc2vec import Doc2Vec, TaggedDocument
+except:
+    pass
 
 
 # 평가점수를 point에 더하고 랭크를 변경하는 함수
@@ -99,39 +101,41 @@ class ArticleView(APIView):
 
 def recommends(articles, user_prefer):
     recommend_articles = []
-    # article_info = []
-    # for article in articles:
-    #     article_info.append(article.desc)
-    #
-    # mecab = Mecab()
-    #
-    # article_info = ['사과 농사 엄청함', '정말 힘든 일들만 골라서함', '귤 나무 구경 가능', '배 수확하는 일합니다', '숨만 쉬고 일합니다', '모내기 일합니다',
-    #                 '한라봉 수확하는 일합니다', '벼 수확하는 일합니다', '옥수수 수확하는 일합니다', '고구마 수확하는 일합니다', '수박 수확하는 일합니다']
-    #
-    # tmp_list = [0] * len(article_info)
-    # stopwords = []
-    #
-    # for i in range(0, len(article_info)):
-    #     tmp = mecab.nouns(article_info[i])
-    #     tokens = []
-    #     for token in tmp:
-    #         if not token in stopwords:
-    #             tokens.append(token)
-    #     tmp_list[i] = tokens
-    #     # article 형태소 분석 완료.
-    #
-    # documents = [TaggedDocument(doc, [i]) for i, doc in enumerate(tmp_list)]
-    #
-    # model = Doc2Vec(documents, vector_size=10, window=1, epochs=1000, min_count=0, workers=4)
-    #
-    # prefer = mecab.nouns(user_prefer)
-    #
-    # inferred_doc_vec = model.infer_vector(prefer)
-    # most_similar_docs = model.docvecs.most_similar([inferred_doc_vec], topn=10)
-    #
-    # for index, similarity in most_similar_docs:
-    #     recommend_articles.append(articles[index])
+    article_info = []
+    try:
+        for article in articles:
+            article_info.append(article.desc)
 
+        mecab = Mecab()
+
+        article_info = ['사과 농사 엄청함', '정말 힘든 일들만 골라서함', '귤 나무 구경 가능', '배 수확하는 일합니다', '숨만 쉬고 일합니다', '모내기 일합니다',
+                        '한라봉 수확하는 일합니다', '벼 수확하는 일합니다', '옥수수 수확하는 일합니다', '고구마 수확하는 일합니다', '수박 수확하는 일합니다']
+
+        tmp_list = [0] * len(article_info)
+        stopwords = []
+
+        for i in range(0, len(article_info)):
+            tmp = mecab.nouns(article_info[i])
+            tokens = []
+            for token in tmp:
+                if not token in stopwords:
+                    tokens.append(token)
+            tmp_list[i] = tokens
+            # article 형태소 분석 완료.
+
+        documents = [TaggedDocument(doc, [i]) for i, doc in enumerate(tmp_list)]
+
+        model = Doc2Vec(documents, vector_size=10, window=1, epochs=1000, min_count=0, workers=4)
+
+        prefer = mecab.nouns(user_prefer)
+
+        inferred_doc_vec = model.infer_vector(prefer)
+        most_similar_docs = model.docvecs.most_similar([inferred_doc_vec], topn=10)
+
+        for index, similarity in most_similar_docs:
+            recommend_articles.append(articles[index])
+    except:
+        pass
     return recommend_articles
 
 
