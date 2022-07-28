@@ -42,8 +42,8 @@ def get_rate_rank_point(user, rate):
 class ArticleView(APIView):
 
     def get(self, request):
-        request_location_choice = request.headers.get('choice')
-        request_article_category = request.headers.get('category')
+        request_location_choice = request.headers.get('choice') if request.headers.get('choice') is not None else ""
+        request_article_category = request.headers.get('category') if request.headers.get('category') is not None else ""
 
         location_list=['','서울','대전','대구','b','','1','2','3']
         try:
@@ -130,24 +130,26 @@ class ArticleDetailView(APIView):
     def post(self, request):
         data = request.data.copy()
         data['user'] = request.user.id
-        print(data)
         serializer = ArticleSerializer(data=data)
+
         if serializer.is_valid():
             serializer.save()
             # 게시글 작성 시 마다 3점 추가
+
             get_rate_rank_point(request.user, 3)  # 임의 user1로 테스트
             return Response({"message": "게시글이 작성되었습니다."}, status=status.HTTP_200_OK)
         else:
             return Response({"message": f'${serializer.errors}'}, status=status.HTTP_400_BAD_REQUEST)
 
     def put(self, request, article_id):
-        user = request.user
         article = ArticleModel.objects.get(id=article_id)
-        if article.user.id == user.id:
-            serializer = ArticleSerializer(article, data=request.data, partial=True)
 
-            if serializer.is_valid():
-                serializer.save()
+        if article.user.id == request.user.id:
+            article_serializer = ArticleSerializer(article, data=request.data, partial=True)
+
+            if article_serializer.is_valid():
+                article_serializer.save()
+
                 return Response({"message": "게시글이 수정되었습니다."}, status=status.HTTP_200_OK)
 
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -164,21 +166,23 @@ class ArticleDetailView(APIView):
 class ArticleApplyView(APIView):
 
     def post(self, request, article_id):
-        # user = request.user
-        # article = ArticleModel.objects.get(id=article_id)
-        serializer = ArticleApplySerializer(data=request.data)
-
+        article = ArticleModel.objects.get(id=article_id)
+        data = {"article_id":article.id, "user": request.user}
+        print(request.user)
+        serializer = ArticleApplySerializer(data=data, partial=True)
         # if user.is_anonymous:
         #     return Response({"error": "로그인 후 이용해주세요"}, status=status.HTTP_400_BAD_REQUEST)
-
+        print(serializer)
         if serializer.is_valid():
             # farmer가 신청 시 마다 3점 추가
             # farmer = request.user.id
             # get_rate_rank_point(farmer,3)
-            get_rate_rank_point(1, 3)  # 테스트 용 user_id 1 임의로 전달
+            get_rate_rank_point(request.user, 3)  # 테스트 용 user_id 1 임의로 전달
             serializer.save()
             return Response({"message": "신청이 완료되었습니다."}, status=status.HTTP_200_OK)
         else:
+            print(1111111111111)
+            print(serializer.errors)
             return Response({"message": f'${serializer.errors}'}, status=status.HTTP_400_BAD_REQUEST)
 
 
