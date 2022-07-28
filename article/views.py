@@ -150,22 +150,18 @@ class ArticleDetailView(APIView):
         return Response(serializer, status=status.HTTP_200_OK)
 
     def post(self, request):
-        if request.data['img2'] == 'undefined' or request.data['img2'] is None:
-            request.data['img2'] = None
-
-        if request.data['img3'] == 'undefined' or request.data['img3'] is None:
-            request.data['img3'] = None
-
-        serializer = ArticleSerializer(data=request.data)
+        data = request.data.copy()
+        data['user'] = request.user.id
+        print(data)
+        serializer = ArticleSerializer(data=data)
         if serializer.is_valid():
             serializer.save()
             # 게시글 작성 시 마다 3점 추가
-            # farm = request.user.id
-
-            get_rate_rank_point(1, 3)  # 임의 user1로 테스트
+            get_rate_rank_point(request.user.id, 3)  # 임의 user1로 테스트
             return Response({"message": "게시글이 작성되었습니다."}, status=status.HTTP_200_OK)
         else:
             return Response({"message": f'${serializer.errors}'}, status=status.HTTP_400_BAD_REQUEST)
+        # return Response(status=status.HTTP_400_BAD_REQUEST)
 
     def put(self, request, article_id):
         user = request.user

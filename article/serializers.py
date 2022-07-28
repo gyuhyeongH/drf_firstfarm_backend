@@ -14,6 +14,7 @@ class ArticleSerializer(serializers.ModelSerializer):
     display_article = serializers.BooleanField(default=True)
 
     def create(self, validated_data):
+        print(validated_data)
         article = ArticleModel.objects.create(
             user=validated_data['user'],
             article_category=validated_data['article_category'],
@@ -28,7 +29,7 @@ class ArticleSerializer(serializers.ModelSerializer):
             img2=validated_data['img2'],
             img3=validated_data['img3'],
             # exposure_end_date=validated_data['exposure_end_date'],
-            display_article=validated_data['display_article'],
+            display_article=True,
         )
 
         return article
