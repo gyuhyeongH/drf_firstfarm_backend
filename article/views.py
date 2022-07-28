@@ -23,46 +23,24 @@ except:
 
 # 평가점수를 point에 더하고 랭크를 변경하는 함수
 def get_rate_rank_point(user, rate):
-    point = UserProfileModel.objects.filter(user=user).values("points")[0].get("points") + rate
-    ps_rank = UserProfileModel.objects.filter(user=user).values("rank_id")[0].get("rank_id")
-    UserProfileModel.objects.filter(user=user).update(points=point)
-    if point >= 5 and point < 10:
+    current_points = user.userprofile.points+rate
+    UserProfileModel.objects.filter(user=user).update(points=current_points)
+
+    if 5 <= current_points < 10:
         UserProfileModel.objects.filter(user_id=user).update(rank_id=1)
-        if ps_rank > 1:
-            return Response("회원님의 등급이 새싹 등급으로 강등되었습니다.", status=status.HTTP_200_OK)
-        elif ps_rank < 1:
-            return Response("축하합니다. 회원님의 등급이 새싹 등급으로 변경되었습니다.", status=status.HTTP_200_OK)
-        else:
-            return Response("회원님은 새싹 등급입니다.", status=status.HTTP_200_OK)
-    elif point >= 10 and point < 15:
+
+    elif 10 <= current_points < 15:
         UserProfileModel.objects.filter(user_id=user).update(rank_id=2)
-        if ps_rank > 2:
-            return Response("회원님의 등급이 줄기 등급으로 강등되었습니다.", status=status.HTTP_200_OK)
-        elif ps_rank < 2:
-            return Response("축하합니다. 회원님의 등급이 줄기 등급으로 변경되었습니다.", status=status.HTTP_200_OK)
-        else:
-            return Response("회원님은 줄기 등급입니다.", status=status.HTTP_200_OK)
-    elif point >= 15 and point < 20:
+
+    elif 15 <= current_points < 20:
         UserProfileModel.objects.filter(user_id=user).update(rank_id=3)
-        if ps_rank > 3:
-            return Response("회원님의 등급이 꽃 등급으로 강등되었습니다.", status=status.HTTP_200_OK)
-        elif ps_rank < 3:
-            return Response("축하합니다. 회원님의 등급이 꽃 등급으로 변경되었습니다.", status=status.HTTP_200_OK)
-        else:
-            return Response("회원님은 꽃 등급입니다.", status=status.HTTP_200_OK)
-    elif point >= 20:
+
+    elif current_points >= 20:
         UserProfileModel.objects.filter(user_id=user).update(rank_id=4)
-        if ps_rank > 4:
-            return Response("회원님의 등급이 열매 등급으로 강등되었습니다.", status=status.HTTP_200_OK)
-        elif ps_rank < 4:
-            return Response("축하합니다. 회원님의 등급이 열매 등급으로 변경되었습니다.", status=status.HTTP_200_OK)
-        else:
-            return Response("회원님은 열매 등급입니다.", status=status.HTTP_200_OK)
-    else:
-        return
 
 
 class ArticleView(APIView):
+
     def get(self, request):
         request_location_choice = request.headers.get('choice')
         request_article_category = request.headers.get('category')
@@ -157,25 +135,22 @@ class ArticleDetailView(APIView):
         if serializer.is_valid():
             serializer.save()
             # 게시글 작성 시 마다 3점 추가
-            get_rate_rank_point(request.user.id, 3)  # 임의 user1로 테스트
+            get_rate_rank_point(request.user, 3)  # 임의 user1로 테스트
             return Response({"message": "게시글이 작성되었습니다."}, status=status.HTTP_200_OK)
         else:
             return Response({"message": f'${serializer.errors}'}, status=status.HTTP_400_BAD_REQUEST)
-        # return Response(status=status.HTTP_400_BAD_REQUEST)
 
     def put(self, request, article_id):
         user = request.user
         article = ArticleModel.objects.get(id=article_id)
-        serializer = ArticleSerializer(article, data=request.data, partial=True)
+        if article.user.id == user.id:
+            serializer = ArticleSerializer(article, data=request.data, partial=True)
 
-        # if user.is_anonymous:
-        #     return Response({"error": "로그인 후 이용해주세요"}, status=status.HTTP_400_BAD_REQUEST)
+            if serializer.is_valid():
+                serializer.save()
+                return Response({"message": "게시글이 수정되었습니다."}, status=status.HTTP_200_OK)
 
-        if serializer.is_valid():
-            serializer.save()
-            return Response({"message": "게시글이 수정되었습니다."}, status=status.HTTP_200_OK)
-
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     # def delete(self, request, article_id):
     #     user = request.user
