@@ -44,30 +44,17 @@ class ArticleSerializer(serializers.ModelSerializer):
 
 
 class ArticleApplySerializer(serializers.ModelSerializer):
-    userinfo = serializers.SerializerMethodField(read_only=True)
 
-    def get_userinfo(self, obj):
-        return {
-            "email": obj.user.email,
-            "fullname": obj.user.userprofile.fullname,
-            "location": obj.user.userprofile.location,
-            "prefer": obj.user.userprofile.prefer,
-            "gender": obj.user.userprofile.gender,
-            "age": obj.user.userprofile.age,
-            "introduction": obj.user.userprofile.introduction,
-            "phone_number": obj.user.userprofile.phone_number,
-            # "img": obj.user.userprofile.img if obj.user.userprofile else None, <- unicodeDecodeError
-        }
 
     class Meta:
         model = ApplyModel
-        fields = ["user", "article", "accept", "userinfo"]
+        fields = ["user", "article", "accept"]
 
     def create(self, validated_data):
-
+        print(validated_data)
         apply = ApplyModel.objects.create(
             user=validated_data['user'],
-            article=validated_data['article_id'],
+            article=validated_data['article'],
             accept=False
         )
         return apply

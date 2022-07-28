@@ -167,12 +167,11 @@ class ArticleApplyView(APIView):
 
     def post(self, request, article_id):
         article = ArticleModel.objects.get(id=article_id)
-        data = {"article_id":article.id, "user": request.user}
-        print(request.user)
+        data = {"article":article.id, "user": request.user.id}
+        print(data)
         serializer = ArticleApplySerializer(data=data, partial=True)
         # if user.is_anonymous:
         #     return Response({"error": "로그인 후 이용해주세요"}, status=status.HTTP_400_BAD_REQUEST)
-        print(serializer)
         if serializer.is_valid():
             # farmer가 신청 시 마다 3점 추가
             # farmer = request.user.id
@@ -181,8 +180,7 @@ class ArticleApplyView(APIView):
             serializer.save()
             return Response({"message": "신청이 완료되었습니다."}, status=status.HTTP_200_OK)
         else:
-            print(1111111111111)
-            print(serializer.errors)
+
             return Response({"message": f'${serializer.errors}'}, status=status.HTTP_400_BAD_REQUEST)
 
 
