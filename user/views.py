@@ -1,10 +1,12 @@
+from ast import literal_eval
+
 from django.shortcuts import render
 from django.contrib.auth import login, logout, authenticate
 
-from rest_framework.views import APIView
 from rest_framework import permissions
+from rest_framework import status
+from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework import  status
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.authentication import JWTAuthentication
 
@@ -30,18 +32,39 @@ class UserView(APIView):
 
     # 회원가입
     def post(self, request):
-        serializer = UserSiginUpSerializer(data=request.data, partial=True, context={"request" : request})
+        try:
+            data = request.data
 
-        if serializer.is_valid(raise_exception=True):
-            serializer.save()
+            for i in data:
+                if data[i] == "":
+                    return Response("회원정보가 없습니다.", status=status.HTTP_400_BAD_REQUEST)
+                    
+            profile_data = request.data.pop('userprofile')[0]
+            img_data = request.data.pop('img')[0]
+
+            profile_data = literal_eval(profile_data)
+            profile_data['img'] = img_data
+
+            data['userprofile'] = profile_data
+
+            serializer = UserSiginUpSerializer(data=data.dict(), context={"request" : request})
+
+            if serializer.is_valid():
+                serializer.save()
+
             return Response(serializer.data, status=status.HTTP_200_OK)
-        else:
-            # return Response({"message": f'${serializer.errors}'}, status=status.HTTP_400_BAD_REQUEST)
-            return Response(data="INFO_INVALID", status=status.HTTP_400_BAD_REQUEST)
+        except:
+            # return Response({"message": f'{serializer.errors}'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
     # 수정
     def put(self, request, obj_id):
         user = request.user
+
+        # birthday 수정 불가
+        profile_data = request.data.pop('userprofile')[0]
+        request.data.pop('birthday', "")
 
         # username 수정 불가
         request.data.pop("username", "")

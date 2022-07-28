@@ -29,7 +29,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = UserProfileModel
-        fields = [ 'prefer', 'fullname', 'location', 'gender', 'age', 'introduction', 'birthday', 'phone_number', 'rank']
+        fields = [ 'prefer', 'fullname', 'location', 'gender', 'age', 'introduction', 'birthday', 'phone_number', 'rank', 'img']
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -51,36 +51,7 @@ class UserSerializer(serializers.ModelSerializer):
 class UserSiginUpSerializer(serializers.ModelSerializer):
 
     userprofile = UserProfileSerializer()
-
-    class Meta:
-        model = UserModel
-        fields = [ "username", "password", "email", "user_category", "join_date", "userprofile" ]
-
-        extra_kwargs = {
-            # write_only : 해당 필드를 쓰기 전용으로 만들어 준다.
-            # 쓰기 전용으로 설정 된 필드는 직렬화 된 데이터에서 보여지지 않는다.
-            'password': {
-                'write_only': True,
-                },
-            "username": {
-                # 유효성 검사
-                'validators': [UniqueValidator(queryset=UserModel.objects.all())]
-                },
-            "email": {
-                # 유효성 검사
-                'validators': [UniqueValidator(queryset=UserModel.objects.all())],
-                # error_messages : 에러 메세지를 자유롭게 설정 할 수 있다.
-                'error_messages': {
-                    # required : 값이 입력되지 않았을 때 보여지는 메세지
-                    'required': '이메일을 입력해주세요.',
-                    # invalid : 값의 포맷이 맞지 않을 때 보여지는 메세지
-                    'invalid': '알맞은 형식의 이메일을 입력해주세요.'
-                    },
-                    # required : validator에서 해당 값의 필요 여부를 판단한다.
-                    'required': False # default : True
-                },
-            }
-
+    
 
     def create(self, validated_data):
         # User object 생성
@@ -91,14 +62,18 @@ class UserSiginUpSerializer(serializers.ModelSerializer):
             user_category = user_category_id,
         )
         user.set_password(validated_data['password'])
-        user.save()
 
         # UserProfile object 생성
         user_profile = validated_data.pop("userprofile")
-        # 첫 회원가입시 id = 1 : name = 씨앗 default
-        user_profile = UserProfileModel.objects.create(user=user, rank_id=1, **user_profile)
-
-        return user
+        if user_profile:
+            # 첫 회원가입시 id = 1 : name = 씨앗 default
+            user_profile = UserProfileModel.objects.create(
+                user=user,
+                rank_id=1,
+                **user_profile,
+                )
+            user.save()
+            return user
 
 
     def update(self, instance, validated_data):
@@ -122,3 +97,45 @@ class UserSiginUpSerializer(serializers.ModelSerializer):
         user_profile_object.save()
 
         return instance
+
+
+    class Meta:
+        model = UserModel
+        fields = [ "username", "password", "email", "user_category", "join_date", "userprofile" ]
+
+        extra_kwargs = {
+            # write_only : 해당 필드를 쓰기 전용으로 만들어 준다.
+            # 쓰기 전용으로 설정 된 필드는 직렬화 된 데이터에서 보여지지 않는다.
+            "username": {
+                # 유효성 검사
+                # 'validators': [UniqueValidator(queryset=UserModel.objects.all())],
+                'error_messages': {
+                    # required : 값이 입력되지 않았을 때 보여지는 메세지
+                    'required': '아이디를 입력해주세요.',
+                    # invalid : 값의 포맷이 맞지 않을 때 보여지는 메세지
+                    'invalid': '알맞은 형식의 아이디를 입력해주세요.'
+                    },},
+            "email": {
+                # 유효성 검사
+                # 'validators': [UniqueValidator(queryset=UserModel.objects.all())],
+                # error_messages : 에러 메세지를 자유롭게 설정 할 수 있다.
+                'error_messages': {
+                    # required : 값이 입력되지 않았을 때 보여지는 메세지
+                    'required': '이메일을 입력해주세요.',
+                    # invalid : 값의 포맷이 맞지 않을 때 보여지는 메세지
+                    'invalid': '알맞은 형식의 이메일을 입력해주세요.'
+                    },
+                },
+            "userprofile":{
+                "introduction": {
+                    'required': False
+                },
+                "img": {
+                    'required': False
+                },
+                "phone_number": {
+                    # 유효성 검사
+                    'validators': [UniqueValidator(queryset=UserModel.objects.all())],
+                    }
+                },
+            }
