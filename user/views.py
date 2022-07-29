@@ -32,18 +32,21 @@ class UserView(APIView):
 
     # 회원가입
     def post(self, request):
-        try:
-            data = request.data
+            data = request.data.copy()
 
             for i in data:
                 if data[i] == "":
                     return Response("회원정보가 없습니다.", status=status.HTTP_400_BAD_REQUEST)
                     
-            profile_data = request.data.pop('userprofile')[0]
-            img_data = request.data.pop('img')[0]
+            profile_data = data.pop('userprofile')[0]
+            img_data = data.pop('img')[0]
 
             profile_data = literal_eval(profile_data)
-            profile_data['img'] = img_data
+
+            if img_data != "undefined":
+                profile_data['img'] = img_data
+
+            # profile_data['img'] = img_data
 
             data['userprofile'] = profile_data
 
@@ -51,12 +54,18 @@ class UserView(APIView):
 
             if serializer.is_valid():
                 serializer.save()
+                return Response(serializer.data, status=status.HTTP_200_OK)
+            else:
+                # return Response({"message": f'{serializer.errors}'}, status=status.HTTP_400_BAD_REQUEST)
+                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        except:
-            # return Response({"message": f'{serializer.errors}'}, status=status.HTTP_400_BAD_REQUEST)
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
+    # def post(self, request):
+    #     serializer = UserSiginUpSerializer(data=request.data)
+    #     if serializer.is_valid():
+    #         serializer.save()
+    #         return Response({"message": "가입 완료"})
+    #     else:
+    #         return Response({"message":f'${serializer.errors}'}, 400)
 
     # 수정
     def put(self, request, obj_id):
