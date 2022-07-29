@@ -51,27 +51,22 @@ class ArticleView(APIView):
         except:
             pass
 
-        if request_article_category == '' and request_location_choice is None:
-            articles = ArticleModel.objects.all()
-            articles_serializer = ArticleSerializer(articles, many=True).data
-
-            return Response(articles_serializer, status=status.HTTP_200_OK)
-
-        elif request_article_category == '' and request_location_choice is not None:
-            articles = ArticleModel.objects.filter(location__contains=request_location_choice)
+        if request_article_category == '':
+            articles = ArticleModel.objects.filter(Q(location__contains=request_location_choice) & Q(display_article=True))
             articles_serializer = ArticleSerializer(articles, many=True).data
 
             return Response(articles_serializer, status=status.HTTP_200_OK)
 
         elif request_article_category == '3':
-            articles = ArticleModel.objects.all()
+            articles = ArticleModel.objects.filter(display_article=True)
+            print(request.user)
             recommend_articles = recommends(articles, request.user.userprofile.prefer)  # 추천 시스템 함수
             recommend_articles_serializer = ArticleSerializer(recommend_articles, many=True).data
 
             return Response(recommend_articles_serializer, status=status.HTTP_200_OK)
 
         else:
-            articles = ArticleModel.objects.filter(Q(article_category=request_article_category) & Q(location__contains=request_location_choice))
+            articles = ArticleModel.objects.filter(Q(article_category=request_article_category) & Q(location__contains=request_location_choice) & Q(display_article=True))
             articles_serializer = ArticleSerializer(articles, many=True).data
 
             return Response(articles_serializer, status=status.HTTP_200_OK)
