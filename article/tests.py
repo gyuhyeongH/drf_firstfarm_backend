@@ -107,7 +107,7 @@ class ArticleReadTest(APITestCase):
             cls.articles.append(Article.objects.create(article_category_id=1, farm_name="aaaa", location='aaaaa',
                                                        title=cls.faker.sentence(), cost='aaaaaa',
                                                        user=cls.user, requirement='aaaaa', period='aaaaa',
-                                                       desc=cls.faker.text(), img1='', img2='', img3=''))
+                                                       desc=cls.faker.text(), img1='', img2='', img3='', display_article=0))
 
     def test_get_article(self):
         url = reverse('article_view')
