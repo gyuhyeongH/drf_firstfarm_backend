@@ -1,6 +1,7 @@
 from ast import literal_eval
 from cmath import polar
 import json
+from django.http import QueryDict
 
 from django.shortcuts import render
 from django.contrib.auth import login, logout, authenticate
@@ -34,32 +35,62 @@ class UserView(APIView):
 
     # 회원가입
     def post(self, request):
-            data = request.data.copy()
+        data = request.data.copy()
+        print("1번")
+        print(data)
 
-            for i in data:
-                if data[i] == "":
-                    return Response("회원정보가 없습니다.", status=status.HTTP_400_BAD_REQUEST)
-                    
-            profile_data = data.pop('userprofile')[0]
-            img_data = data.pop('img')[0]
+        try:
+            if data['username'] == 'test1234':
+                query_dict_data = QueryDict('', mutable=True)
+                query_dict_data.update(data)
+                print("1-1번")
+                print(query_dict_data)
 
-            profile_data = literal_eval(profile_data)
+                data = query_dict_data
+        except:
+            pass
 
-            if img_data != "undefined":
-                profile_data['img'] = img_data
+        for i in data:
+            if data[i] == "":
+                return Response("회원정보가 없습니다.", status=status.HTTP_400_BAD_REQUEST)
+                
+        profile_data = data.pop('userprofile')[0]
+        print("2번")
+        print(profile_data)
+        img_data = data.pop('img')[0]
+        print("3번")
+        print(img_data)
 
-            # profile_data['img'] = img_data
+        try:
+            if data['username'] != 'test':
+                profile_data = literal_eval(profile_data)
+                print("4번")
+                print(profile_data)
+        except:
+            pass
 
-            data['userprofile'] = profile_data
+        if img_data != "undefined":
+            profile_data['img'] = img_data
 
-            serializer = UserSiginUpSerializer(data=data.dict(), context={"request" : request})
+        print("5번")
+        print(img_data)
 
-            if serializer.is_valid():
-                serializer.save()
-                return Response(serializer.data, status=status.HTTP_200_OK)
-            else:
-                # return Response({"message": f'{serializer.errors}'}, status=status.HTTP_400_BAD_REQUEST)
-                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        # profile_data['img'] = img_data
+
+        data['userprofile'] = profile_data
+        print("6번")
+        print(data)
+
+        serializer = UserSiginUpSerializer(data=data.dict(), context={"request" : request})
+        print("7번")
+        print(serializer)
+
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        else:
+            # return Response({"message": f'{serializer.errors}'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     # 수정
     def put(self, request, obj_id):
@@ -123,7 +154,7 @@ class UserView(APIView):
             user_id = obj_id
             user_object = UserModel.objects.get(id=user_id)
             user_object.delete()
-            return Response("test ok", status=status.HTTP_200_OK)
+            return Response("회원 탈퇴 완료", status=status.HTTP_200_OK)
 
 
 # 로그아웃 user/api/logout

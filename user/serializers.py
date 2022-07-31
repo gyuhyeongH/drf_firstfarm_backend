@@ -90,6 +90,8 @@ class UserSiginUpSerializer(serializers.ModelSerializer):
             }
 
     def create(self, validated_data):
+        print("8번")
+        print(validated_data)
         # User object 생성
         user_category_id = validated_data['user_category']
         user = UserModel.objects.create(
