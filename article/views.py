@@ -1,10 +1,8 @@
 from django.db.models import Q
-from django.shortcuts import render
 import copy
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from user.models import User as UserModel
 from user.models import UserProfile as UserProfileModel
 from .models import Article as ArticleModel
 from .models import Apply as ApplyModel
@@ -13,6 +11,7 @@ from article.serializers import ArticleSerializer
 
 from article.serializers import ArticleApplySerializer, UserApplySerializer
 from article.serializers import ReviewSerializer
+
 try:
     from konlpy.tag import Mecab
     from gensim.test.utils import common_texts
@@ -23,7 +22,7 @@ except:
 
 # 평가점수를 point에 더하고 랭크를 변경하는 함수
 def get_rate_rank_point(user, rate):
-    current_points = user.userprofile.points+rate
+    current_points = user.userprofile.points + rate
     UserProfileModel.objects.filter(user=user).update(points=current_points)
 
     if 5 <= current_points < 10:
@@ -45,28 +44,29 @@ class ArticleView(APIView):
         request_location_choice = request.headers.get('choice') if request.headers.get('choice') is not None else ""
         request_article_category = request.headers.get('category') if request.headers.get('category') is not None else ""
 
-        location_list=['','서울','대전','대구','b','','1','2','3']
-        try:
+        location_list = ['서울', '경기', '인천', '강원', '대전', '세종', '충청남도', '충청북도', '부산', '울산', '경상남도', '경상북도', '대구', '광주',
+                         '전라남도', '전라북도', '제주도']
+
+        if request_location_choice != "":
             request_location_choice = location_list[int(request_location_choice)]
-        except:
-            pass
 
         if request_article_category == '':
-            articles = ArticleModel.objects.filter(Q(location__contains=request_location_choice) & Q(display_article=True))
+            articles = ArticleModel.objects.filter(Q(location__contains=request_location_choice) & Q(display_article=0))
             articles_serializer = ArticleSerializer(articles, many=True).data
 
             return Response(articles_serializer, status=status.HTTP_200_OK)
 
         elif request_article_category == '3':
             articles = ArticleModel.objects.filter(display_article=True)
-            print(request.user)
             recommend_articles = recommends(articles, request.user.userprofile.prefer)  # 추천 시스템 함수
             recommend_articles_serializer = ArticleSerializer(recommend_articles, many=True).data
 
             return Response(recommend_articles_serializer, status=status.HTTP_200_OK)
 
         else:
-            articles = ArticleModel.objects.filter(Q(article_category=request_article_category) & Q(location__contains=request_location_choice) & Q(display_article=True))
+            articles = ArticleModel.objects.filter(
+                Q(article_category=request_article_category) & Q(location__contains=request_location_choice) & Q(
+                    display_article=True))
             articles_serializer = ArticleSerializer(articles, many=True).data
 
             return Response(articles_serializer, status=status.HTTP_200_OK)
@@ -80,10 +80,6 @@ def recommends(articles, user_prefer):
             article_info.append(article.desc)
 
         mecab = Mecab()
-
-        article_info = ['사과 농사 엄청함', '정말 힘든 일들만 골라서함', '귤 나무 구경 가능', '배 수확하는 일합니다', '숨만 쉬고 일합니다', '모내기 일합니다',
-                        '한라봉 수확하는 일합니다', '벼 수확하는 일합니다', '옥수수 수확하는 일합니다', '고구마 수확하는 일합니다', '수박 수확하는 일합니다']
-
         tmp_list = [0] * len(article_info)
         stopwords = []
 
@@ -162,17 +158,13 @@ class ArticleApplyView(APIView):
 
     def post(self, request, article_id):
         article = ArticleModel.objects.get(id=article_id)
-        data = {"article":article.id, "user": request.user.id}
-        print(data)
+        data = {"article": article.id, "user": request.user.id}
         serializer = ArticleApplySerializer(data=data, partial=True)
-        # if user.is_anonymous:
-        #     return Response({"error": "로그인 후 이용해주세요"}, status=status.HTTP_400_BAD_REQUEST)
+
         if serializer.is_valid():
-            # farmer가 신청 시 마다 3점 추가
-            # farmer = request.user.id
-            # get_rate_rank_point(farmer,3)
             get_rate_rank_point(request.user, 3)  # 테스트 용 user_id 1 임의로 전달
             serializer.save()
+
             return Response({"message": "신청이 완료되었습니다."}, status=status.HTTP_200_OK)
         else:
 

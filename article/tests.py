@@ -122,3 +122,6 @@ class ArticleReadTest(APITestCase):
             for key, value in serializer.items():
                 self.assertEqual(response.data[key], value)
 
+
+
+
