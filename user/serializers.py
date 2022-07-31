@@ -1,5 +1,8 @@
+import json
 from rest_framework import serializers
 from rest_framework.validators import UniqueValidator
+
+from collections import OrderedDict
 
 from user.models import (
     User as UserModel,
@@ -30,6 +33,13 @@ class UserProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserProfileModel
         fields = [ 'prefer', 'fullname', 'location', 'gender', 'age', 'introduction', 'birthday', 'phone_number', 'rank', 'img']
+
+
+class UserProfilePutSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = UserProfileModel
+        fields = [ 'prefer', 'fullname', 'location', 'introduction', 'img']
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -77,14 +87,6 @@ class UserSiginUpSerializer(serializers.ModelSerializer):
                     'invalid': '알맞은 형식의 이메일을 입력해주세요.'
                     },
                 },
-            "userprofile":{
-                "introduction": {'required': False},
-                "img": {'required': False},
-                # "phone_number": {
-                #     # 유효성 검사
-                #     # 'validators': [UniqueValidator(queryset=UserModel.objects.all())],
-                #     }
-                },
             }
 
     def create(self, validated_data):
@@ -110,10 +112,33 @@ class UserSiginUpSerializer(serializers.ModelSerializer):
             return user
 
 
+class UserSiginPutSerializer(serializers.ModelSerializer):
+
+    userprofile = UserProfilePutSerializer()
+    
+    class Meta:
+        model = UserModel
+        fields = ["username", "password", "email", "userprofile"]
+
+        extra_kwargs = {
+            # write_only : 해당 필드를 쓰기 전용으로 만들어 준다.
+            # 쓰기 전용으로 설정 된 필드는 직렬화 된 데이터에서 보여지지 않는다.
+            "username": {
+                'required': False,
+            }
+        }
+
     def update(self, instance, validated_data):
-        # instance에는 입력된 object가 담긴다.
-        user_profile = validated_data.pop("userprofile")
+        print("6번")
+        print(instance)
+        print("7번")
+        print(validated_data)
         
+        user_profile = validated_data.pop("userprofile")
+        print("8번")
+        print(user_profile)
+        
+        # instance에는 입력된 object가 담긴다.
         # 유저 필수 정보 수정
         for key, value in validated_data.items():
             if key == "password":
@@ -121,6 +146,7 @@ class UserSiginUpSerializer(serializers.ModelSerializer):
                 continue
             
             setattr(instance, key, value)
+
         instance.save()
 
         # 프로필 정보 수정

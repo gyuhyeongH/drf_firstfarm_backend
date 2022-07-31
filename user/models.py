@@ -92,7 +92,7 @@ class UserProfile(models.Model):
     age = models.IntegerField(verbose_name="나이")
     introduction = models.TextField(verbose_name="자기소개", null=True, blank=True)
     birthday = models.DateField(verbose_name="생일", null=True)
-    img = models.ImageField(verbose_name="프로필이미지", upload_to='img/', default='media/img/form_profile_img.png')
+    img = models.ImageField(verbose_name="프로필이미지", upload_to='img/', default='./img/form_profile_img.png')
     phone_number = models.CharField(max_length=20, unique=True)
     points = models.IntegerField(verbose_name="포인트",default=0)
 
