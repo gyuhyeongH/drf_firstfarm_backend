@@ -43,7 +43,7 @@ class User(AbstractBaseUser):
     # 회원가입 정보
     username = models.CharField(verbose_name="사용자 계정", max_length=50, unique=True)
     password = models.CharField(verbose_name="사용자 비밀번호", max_length=128)
-    email = models.EmailField(verbose_name="사용자 이메일", max_length=254)
+    email = models.EmailField(verbose_name="사용자 이메일", max_length=254, unique=True)
     join_date = models.DateTimeField(verbose_name="가입일", auto_now_add=True)
 
     # user category
@@ -92,7 +92,7 @@ class UserProfile(models.Model):
     age = models.IntegerField(verbose_name="나이")
     introduction = models.TextField(verbose_name="자기소개", null=True, blank=True)
     birthday = models.DateField(verbose_name="생일", null=True)
-    img = models.ImageField(verbose_name="프로필이미지", upload_to=user, null=True)
+    img = models.ImageField(verbose_name="프로필이미지", upload_to='img/', default='./img/form_profile_img.png')
     phone_number = models.CharField(max_length=20, unique=True)
     points = models.IntegerField(verbose_name="포인트",default=0)
 
