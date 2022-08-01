@@ -6,6 +6,20 @@ from article.models import Review as ReviewModel
 
 
 class ArticleSerializer(serializers.ModelSerializer):
+    # article_review = serializers.SerializerMethodField()
+    # review = ReviewSerializer()
+    #
+    # def get_article_review(self, obj):
+    #     review_rate_data = []
+    #     review_content_data = []
+    #
+    #     for reviews in obj.article.review_set.all():
+    #         review_rate_data.append(reviews.review.rate)
+    #         review_content_data.append(reviews.review.content)
+    #
+    #
+    #     return {"rate" : review_rate_data, "content":review_content_data}
+
     class Meta:
         model = ArticleModel
         fields = '__all__'
@@ -94,8 +108,8 @@ class ArticleApplySerializer(serializers.ModelSerializer):
         print(validated_data)
         apply = ApplyModel.objects.create(
             user=validated_data['user'],
-            article=validated_data['article'],
-            accept=False
+            article = validated_data['article']
+
         )
         return apply
 
@@ -131,6 +145,7 @@ class UserApplySerializer(serializers.ModelSerializer):
         model = ApplyModel
 
         fields = ["user","article","accept","articleinfo","userinfo"]
+
 
 
 # ReviewSerializer

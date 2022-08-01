@@ -137,21 +137,25 @@ class ArticleDetailView(APIView):
 
         if article.user.id == request.user.id:
             article_serializer = ArticleSerializer(article, data=request.data, partial=True)
-
-            if article_serializer.is_valid():
+   
+        if article_serializer.is_valid():
                 article_serializer.save()
 
                 return Response({"message": "게시글이 수정되었습니다."}, status=status.HTTP_200_OK)
 
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    # def delete(self, request, article_id):
-    #     user = request.user
-    #     article = ArticleModel.objects.get(id=article_id)
-    #     if user == article.user_id:
-    #         return Response({"message": "게시글 마감 성공."}, status=status.HTTP_200_OK)
-    #     else:
-    #         return Response({"message": "게시글 마감 실패."}, status=status.HTTP_400_BAD_REQUEST)
+    def delete(self, request, article_id):
+        # user = request.user
+        user = 1
+        article = ArticleModel.objects.get(id=article_id)
+        if user == article.user.id:
+            article.display_article = False
+            article.save()
+            print(article.display_article)
+            return Response({"message": "게시글 마감 성공."}, status=status.HTTP_200_OK)
+        else:
+            return Response({"message": "게시글 마감 실패."}, status=status.HTTP_400_BAD_REQUEST)
 
 
 class ArticleApplyView(APIView):
@@ -160,6 +164,7 @@ class ArticleApplyView(APIView):
         article = ArticleModel.objects.get(id=article_id)
         data = {"article": article.id, "user": request.user.id}
         serializer = ArticleApplySerializer(data=data, partial=True)
+
 
         if serializer.is_valid():
             get_rate_rank_point(request.user, 3)  # 테스트 용 user_id 1 임의로 전달
