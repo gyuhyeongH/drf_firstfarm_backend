@@ -2,7 +2,7 @@ name: ci-cd-pipeline
 on:
   push:
     branches:
-      - main
+      - recommend
 jobs:
   run-test-code:
     runs-on: ubuntu-latest
@@ -15,8 +15,6 @@ jobs:
       - name: Run Tests
         env:
           SECRET_KEY: ${{secrets.SECRET_KEY}}
-        - run: python manage.py makemigrations
-        - run: python manage.py migrate
         run: python manage.py test
   build-image:
     needs: run-test-code
