@@ -15,7 +15,10 @@ jobs:
       - name: Run Tests
         env:
           SECRET_KEY: ${{secrets.SECRET_KEY}}
-        run: python manage.py test article
+        run: |
+          python manage.py makemigrations
+          python manage.py migrate
+          python manage.py test
   build-image:
     needs: run-test-code
     runs-on: ubuntu-latest
