@@ -1,10 +1,8 @@
 from django.db.models import Q
-from django.shortcuts import render
 import copy
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from user.models import User as UserModel
 from user.models import UserProfile as UserProfileModel
 from .models import Article as ArticleModel
 from .models import Apply as ApplyModel
@@ -13,85 +11,62 @@ from article.serializers import ArticleSerializer
 
 from article.serializers import ArticleApplySerializer, UserApplySerializer
 from article.serializers import ReviewSerializer
-# from konlpy.tag import Mecab
-# from gensim.test.utils import common_texts
-# from gensim.models.doc2vec import Doc2Vec, TaggedDocument
-import json
+
+try:
+    from konlpy.tag import Mecab
+    from gensim.test.utils import common_texts
+    from gensim.models.doc2vec import Doc2Vec, TaggedDocument
+except:
+    pass
 
 
 # 평가점수를 point에 더하고 랭크를 변경하는 함수
 def get_rate_rank_point(user, rate):
-    point = UserProfileModel.objects.filter(user=user).values("points")[0].get("points") + rate
-    ps_rank = UserProfileModel.objects.filter(user=user).values("rank_id")[0].get("rank_id")
-    UserProfileModel.objects.filter(user=user).update(points=point)
-    if point >= 5 and point < 10:
+    current_points = user.userprofile.points + rate
+    UserProfileModel.objects.filter(user=user).update(points=current_points)
+
+    if 5 <= current_points < 10:
         UserProfileModel.objects.filter(user_id=user).update(rank_id=1)
-        if ps_rank > 1:
-            return Response("회원님의 등급이 새싹 등급으로 강등되었습니다.", status=status.HTTP_200_OK)
-        elif ps_rank < 1:
-            return Response("축하합니다. 회원님의 등급이 새싹 등급으로 변경되었습니다.", status=status.HTTP_200_OK)
-        else:
-            return Response("회원님은 새싹 등급입니다.", status=status.HTTP_200_OK)
-    elif point >= 10 and point < 15:
+
+    elif 10 <= current_points < 15:
         UserProfileModel.objects.filter(user_id=user).update(rank_id=2)
-        if ps_rank > 2:
-            return Response("회원님의 등급이 줄기 등급으로 강등되었습니다.", status=status.HTTP_200_OK)
-        elif ps_rank < 2:
-            return Response("축하합니다. 회원님의 등급이 줄기 등급으로 변경되었습니다.", status=status.HTTP_200_OK)
-        else:
-            return Response("회원님은 줄기 등급입니다.", status=status.HTTP_200_OK)
-    elif point >= 15 and point < 20:
+
+    elif 15 <= current_points < 20:
         UserProfileModel.objects.filter(user_id=user).update(rank_id=3)
-        if ps_rank > 3:
-            return Response("회원님의 등급이 꽃 등급으로 강등되었습니다.", status=status.HTTP_200_OK)
-        elif ps_rank < 3:
-            return Response("축하합니다. 회원님의 등급이 꽃 등급으로 변경되었습니다.", status=status.HTTP_200_OK)
-        else:
-            return Response("회원님은 꽃 등급입니다.", status=status.HTTP_200_OK)
-    elif point >= 20:
+
+    elif current_points >= 20:
         UserProfileModel.objects.filter(user_id=user).update(rank_id=4)
-        if ps_rank > 4:
-            return Response("회원님의 등급이 열매 등급으로 강등되었습니다.", status=status.HTTP_200_OK)
-        elif ps_rank < 4:
-            return Response("축하합니다. 회원님의 등급이 열매 등급으로 변경되었습니다.", status=status.HTTP_200_OK)
-        else:
-            return Response("회원님은 열매 등급입니다.", status=status.HTTP_200_OK)
-    else:
-        return
 
 
 class ArticleView(APIView):
+
     def get(self, request):
-        request_location_choice = request.headers.get('choice')
-        request_article_category = request.headers.get('category')
+        request_location_choice = request.headers.get('choice') if request.headers.get('choice') is not None else ""
+        request_article_category = request.headers.get('category') if request.headers.get('category') is not None else ""
 
-        location_list=['','서울','대전','대구','b','','1','2','3']
-        try:
+        location_list = ['서울', '경기', '인천', '강원', '대전', '세종', '충청남도', '충청북도', '부산', '울산', '경상남도', '경상북도', '대구', '광주',
+                         '전라남도', '전라북도', '제주도']
+
+        if request_location_choice != "":
             request_location_choice = location_list[int(request_location_choice)]
-        except:
-            pass
 
-        if request_article_category == '' and request_location_choice is None:
-            articles = ArticleModel.objects.all()
-            articles_serializer = ArticleSerializer(articles, many=True).data
-
-            return Response(articles_serializer, status=status.HTTP_200_OK)
-
-        elif request_article_category == '' and request_location_choice is not None:
-            articles = ArticleModel.objects.filter(location__contains=request_location_choice)
+        if request_article_category == '':
+            articles = ArticleModel.objects.filter(Q(location__contains=request_location_choice) & Q(display_article=0))
             articles_serializer = ArticleSerializer(articles, many=True).data
 
             return Response(articles_serializer, status=status.HTTP_200_OK)
 
         elif request_article_category == '3':
-            articles = ArticleModel.objects.all()
+            articles = ArticleModel.objects.filter(display_article=True)
             recommend_articles = recommends(articles, request.user.userprofile.prefer)  # 추천 시스템 함수
             recommend_articles_serializer = ArticleSerializer(recommend_articles, many=True).data
 
             return Response(recommend_articles_serializer, status=status.HTTP_200_OK)
 
         else:
-            articles = ArticleModel.objects.filter(Q(article_category=request_article_category) & Q(location__contains=request_location_choice))
+            articles = ArticleModel.objects.filter(
+                Q(article_category=request_article_category) & Q(location__contains=request_location_choice) & Q(
+                    display_article=True))
             articles_serializer = ArticleSerializer(articles, many=True).data
 
             return Response(articles_serializer, status=status.HTTP_200_OK)
@@ -99,39 +74,37 @@ class ArticleView(APIView):
 
 def recommends(articles, user_prefer):
     recommend_articles = []
-    # article_info = []
-    # for article in articles:
-    #     article_info.append(article.desc)
-    #
-    # mecab = Mecab()
-    #
-    # article_info = ['사과 농사 엄청함', '정말 힘든 일들만 골라서함', '귤 나무 구경 가능', '배 수확하는 일합니다', '숨만 쉬고 일합니다', '모내기 일합니다',
-    #                 '한라봉 수확하는 일합니다', '벼 수확하는 일합니다', '옥수수 수확하는 일합니다', '고구마 수확하는 일합니다', '수박 수확하는 일합니다']
-    #
-    # tmp_list = [0] * len(article_info)
-    # stopwords = []
-    #
-    # for i in range(0, len(article_info)):
-    #     tmp = mecab.nouns(article_info[i])
-    #     tokens = []
-    #     for token in tmp:
-    #         if not token in stopwords:
-    #             tokens.append(token)
-    #     tmp_list[i] = tokens
-    #     # article 형태소 분석 완료.
-    #
-    # documents = [TaggedDocument(doc, [i]) for i, doc in enumerate(tmp_list)]
-    #
-    # model = Doc2Vec(documents, vector_size=10, window=1, epochs=1000, min_count=0, workers=4)
-    #
-    # prefer = mecab.nouns(user_prefer)
-    #
-    # inferred_doc_vec = model.infer_vector(prefer)
-    # most_similar_docs = model.docvecs.most_similar([inferred_doc_vec], topn=10)
-    #
-    # for index, similarity in most_similar_docs:
-    #     recommend_articles.append(articles[index])
+    article_info = []
+    try:
+        for article in articles:
+            article_info.append(article.desc)
 
+        mecab = Mecab()
+        tmp_list = [0] * len(article_info)
+        stopwords = []
+
+        for i in range(0, len(article_info)):
+            tmp = mecab.nouns(article_info[i])
+            tokens = []
+            for token in tmp:
+                if not token in stopwords:
+                    tokens.append(token)
+            tmp_list[i] = tokens
+            # article 형태소 분석 완료.
+
+        documents = [TaggedDocument(doc, [i]) for i, doc in enumerate(tmp_list)]
+
+        model = Doc2Vec(documents, vector_size=10, window=1, epochs=1000, min_count=0, workers=4)
+
+        prefer = mecab.nouns(user_prefer)
+
+        inferred_doc_vec = model.infer_vector(prefer)
+        most_similar_docs = model.docvecs.most_similar([inferred_doc_vec], topn=10)
+
+        for index, similarity in most_similar_docs:
+            recommend_articles.append(articles[index])
+    except:
+        pass
     return recommend_articles
 
 
@@ -146,36 +119,31 @@ class ArticleDetailView(APIView):
         return Response(serializer, status=status.HTTP_200_OK)
 
     def post(self, request):
-        if request.data['img2'] == 'undefined' or request.data['img2'] is None:
-            request.data['img2'] = None
+        data = request.data.copy()
+        data['user'] = request.user.id
+        serializer = ArticleSerializer(data=data)
 
-        if request.data['img3'] == 'undefined' or request.data['img3'] is None:
-            request.data['img3'] = None
-
-        serializer = ArticleSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
             # 게시글 작성 시 마다 3점 추가
-            # farm = request.user.id
 
-            get_rate_rank_point(1, 3)  # 임의 user1로 테스트
+            get_rate_rank_point(request.user, 3)  # 임의 user1로 테스트
             return Response({"message": "게시글이 작성되었습니다."}, status=status.HTTP_200_OK)
         else:
             return Response({"message": f'${serializer.errors}'}, status=status.HTTP_400_BAD_REQUEST)
 
     def put(self, request, article_id):
-        user = request.user
         article = ArticleModel.objects.get(id=article_id)
-        serializer = ArticleSerializer(article, data=request.data, partial=True)
 
-        # if user.is_anonymous:
-        #     return Response({"error": "로그인 후 이용해주세요"}, status=status.HTTP_400_BAD_REQUEST)
+        if article.user.id == request.user.id:
+            article_serializer = ArticleSerializer(article, data=request.data, partial=True)
 
-        if serializer.is_valid():
-            serializer.save()
-            return Response({"message": "게시글이 수정되었습니다."}, status=status.HTTP_200_OK)
+            if article_serializer.is_valid():
+                article_serializer.save()
 
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+                return Response({"message": "게시글이 수정되었습니다."}, status=status.HTTP_200_OK)
+
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     # def delete(self, request, article_id):
     #     user = request.user
@@ -189,21 +157,17 @@ class ArticleDetailView(APIView):
 class ArticleApplyView(APIView):
 
     def post(self, request, article_id):
-        # user = request.user
-        # article = ArticleModel.objects.get(id=article_id)
-        serializer = ArticleApplySerializer(data=request.data)
-
-        # if user.is_anonymous:
-        #     return Response({"error": "로그인 후 이용해주세요"}, status=status.HTTP_400_BAD_REQUEST)
+        article = ArticleModel.objects.get(id=article_id)
+        data = {"article": article.id, "user": request.user.id}
+        serializer = ArticleApplySerializer(data=data, partial=True)
 
         if serializer.is_valid():
-            # farmer가 신청 시 마다 3점 추가
-            # farmer = request.user.id
-            # get_rate_rank_point(farmer,3)
-            get_rate_rank_point(1, 3)  # 테스트 용 user_id 1 임의로 전달
+            get_rate_rank_point(request.user, 3)  # 테스트 용 user_id 1 임의로 전달
             serializer.save()
+
             return Response({"message": "신청이 완료되었습니다."}, status=status.HTTP_200_OK)
         else:
+
             return Response({"message": f'${serializer.errors}'}, status=status.HTTP_400_BAD_REQUEST)
 
 

@@ -1,8 +1,9 @@
 from django.db import models
 from datetime import datetime, timedelta
 
+from django.urls import reverse
 
-# Create your models here.
+
 class ArticleCategory(models.Model):
     name = models.CharField("카테고리", max_length=30)
 
@@ -36,6 +37,9 @@ class Article(models.Model):
 
     def __str__(self):
         return self.title
+
+    def get_absolute_url(self):
+        return reverse('article_detail_view', kwargs={'article_id':self.id})
 
 
 class Apply(models.Model):
