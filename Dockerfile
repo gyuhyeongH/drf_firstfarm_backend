@@ -1,16 +1,18 @@
 FROM python:3.8-slim
 
 
-RUN mkdir /srv/docker-server
-ADD . /srv/docker-server
+RUN mkdir /usr/src/app/
 
-WORKDIR /srv/docker-server
+ADD . /usr/src/app/
+
+
+WORKDIR /usr/src/app/
+
 
 RUN pip install --upgrade pip
 RUN pip install -r requirements.txt
 
 EXPOSE 8000
-CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]
 
 
 
