@@ -19,5 +19,5 @@ urlpatterns = [
     path('farmer/', views.FarmerMyPageView.as_view(), name='farmer_page'),
     path('<article_id>/farmer', views.FarmerMyPageView.as_view(), name='farmer_page'),
     path('farmer/<review_id>', views.FarmerMyPageView.as_view(), name='farmer_page'),
-    path('review', views.FarmerReviewView.as_view(), name='farmer_review_page'),
+    path('review/', views.FarmerReviewView.as_view(), name='farmer_review_page'),
 ]
