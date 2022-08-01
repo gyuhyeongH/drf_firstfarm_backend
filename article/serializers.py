@@ -6,30 +6,31 @@ from article.models import Review as ReviewModel
 
 
 class ArticleSerializer(serializers.ModelSerializer):
-    # article_review = serializers.SerializerMethodField()
-    # review = ReviewSerializer()
-    #
-    # def get_article_review(self, obj):
-    #     review_rate_data = []
-    #     review_content_data = []
-    #
-    #     for reviews in obj.article.review_set.all():
-    #         review_rate_data.append(reviews.review.rate)
-    #         review_content_data.append(reviews.review.content)
-    #
-    #
-    #     return {"rate" : review_rate_data, "content":review_content_data}
+    article_review = serializers.SerializerMethodField()
+
+    def get_article_review(self, obj):
+        review_rate_data = []
+        review_content_data = []
+        print(obj.review_set.all())
+        for reviews in obj.review_set.all():
+            review_rate_data.append(reviews.rate)
+            review_content_data.append(reviews.content)
+            print({"rate" : review_rate_data, "content":review_content_data})
+        return {"rate" : review_rate_data, "content":review_content_data}
 
     class Meta:
         model = ArticleModel
-        fields = '__all__'
+        fields = [
+            "id", "user", "article_category", "farm_name", "location", "title", "cost", "requirement", "period", "img1",
+            "img2", "img3",
+            "desc", "display_article", "exposure_end_date", "created_at", "updated_at", "article_review"
+        ]
 
     farm_name = serializers.CharField(required=True, min_length=2)
     title = serializers.CharField(required=True, min_length=4)
     display_article = serializers.BooleanField(default=True)
 
     def create(self, validated_data):
-        print(validated_data)
         article = ArticleModel.objects.create(
             user=validated_data['user'],
             article_category=validated_data['article_category'],
