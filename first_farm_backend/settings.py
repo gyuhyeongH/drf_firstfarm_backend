@@ -152,7 +152,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # 이미지 업로드 경로
 MEDIA_URL = '/media/'
 
-MEDIA_ROOT = BASE_DIR / 'midia'
+MEDIA_ROOT = BASE_DIR / 'media'
 
 AUTH_USER_MODEL = 'user.User'
 
