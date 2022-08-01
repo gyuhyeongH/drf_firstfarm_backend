@@ -4,6 +4,7 @@ from article.models import Article as ArticleModel
 from article.models import Apply as ApplyModel
 from article.models import Review as ReviewModel
 
+
 class ArticleSerializer(serializers.ModelSerializer):
     class Meta:
         model = ArticleModel
@@ -14,6 +15,7 @@ class ArticleSerializer(serializers.ModelSerializer):
     display_article = serializers.BooleanField(default=True)
 
     def create(self, validated_data):
+        print(validated_data)
         article = ArticleModel.objects.create(
             user=validated_data['user'],
             article_category=validated_data['article_category'],
@@ -28,7 +30,7 @@ class ArticleSerializer(serializers.ModelSerializer):
             img2=validated_data['img2'],
             img3=validated_data['img3'],
             # exposure_end_date=validated_data['exposure_end_date'],
-            display_article=validated_data['display_article'],
+            display_article=True,
         )
 
         return article
@@ -39,6 +41,7 @@ class ArticleSerializer(serializers.ModelSerializer):
             setattr(instance, key, value)
         instance.save()
         return instance
+
 
 class MyPageSerializer(serializers.ModelSerializer):
     userinfo = serializers.SerializerMethodField(read_only=True)
@@ -63,8 +66,10 @@ class MyPageSerializer(serializers.ModelSerializer):
             "id","user","article_category","farm_name","location","title","cost","requirement","period","img1","img2","img3",
             "desc","display_article","exposure_end_date","created_at","updated_at","userinfo"
         ]
+
+
 class ArticleApplySerializer(serializers.ModelSerializer):
-    userinfo = serializers.SerializerMethodField(read_only=True)
+
 
     def get_userinfo(self, obj):
         return {
@@ -80,16 +85,20 @@ class ArticleApplySerializer(serializers.ModelSerializer):
             "points":obj.user.userprofile.points,
             # "profile_img": obj.user.userprofile.img
         }
+
     class Meta:
         model = ApplyModel
-        fields = ["user","article","accept","userinfo"]
+        fields = ["user", "article", "accept"]
 
     def create(self, validated_data):
+        print(validated_data)
         apply = ApplyModel.objects.create(
-            user=validated_data['user_id'],
-            article = validated_data['article_id']
+            user=validated_data['user'],
+            article=validated_data['article'],
+            accept=False
         )
         return apply
+
 
 class UserApplySerializer(serializers.ModelSerializer):
     articleinfo = serializers.SerializerMethodField(read_only=True)
@@ -117,9 +126,12 @@ class UserApplySerializer(serializers.ModelSerializer):
             "cost": obj.article.cost,
             "desc": obj.article.desc,
         }
+
     class Meta:
         model = ApplyModel
+
         fields = ["user","article","accept","articleinfo","userinfo"]
+
 
 # ReviewSerializer
 class ReviewSerializer(serializers.ModelSerializer):

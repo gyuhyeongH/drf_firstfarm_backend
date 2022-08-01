@@ -1,0 +1,11 @@
+version: "3.3"
+
+services:
+  web:
+    image: ckacl59/first_farm_backend:latest
+    command: python manage.py runserver 0.0.0.0:8000
+    ports:
+      - "8000:8000"
+    working_dir: /srv/docker-server
+    expose:
+      - 8000
