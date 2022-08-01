@@ -17,7 +17,7 @@ jobs:
           SECRET_KEY: ${{secrets.SECRET_KEY}}
         - run: python manage.py makemigrations
         - run: python manage.py migrate
-        - run: python manage.py test
+        run: python manage.py test
   build-image:
     needs: run-test-code
     runs-on: ubuntu-latest
