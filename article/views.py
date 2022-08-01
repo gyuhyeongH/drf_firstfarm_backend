@@ -138,7 +138,7 @@ class ArticleDetailView(APIView):
         if article.user.id == request.user.id:
             article_serializer = ArticleSerializer(article, data=request.data, partial=True)
    
-        if article_serializer.is_valid():
+            if article_serializer.is_valid():
                 article_serializer.save()
 
                 return Response({"message": "게시글이 수정되었습니다."}, status=status.HTTP_200_OK)
