@@ -9,3 +9,5 @@ services:
     working_dir: /srv/docker-server
     expose:
       - 8000
+    env_file:
+      - ./.env
