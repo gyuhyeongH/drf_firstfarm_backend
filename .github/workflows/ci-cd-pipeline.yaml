@@ -2,7 +2,7 @@ name: ci-cd-pipeline
 on:
   push:
     branches:
-      - main
+      - recommend
 jobs:
   run-test-code:
     runs-on: ubuntu-latest
@@ -18,7 +18,7 @@ jobs:
         run: |
           python manage.py makemigrations
           python manage.py migrate
-          python manage.py test
+          python manage.py test article
   build-image:
     needs: run-test-code
     runs-on: ubuntu-latest
