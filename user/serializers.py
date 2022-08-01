@@ -1,4 +1,9 @@
+import json
 from rest_framework import serializers
+from rest_framework.validators import UniqueValidator
+
+from collections import OrderedDict
+
 from user.models import (
     User as UserModel,
     UserProfile as UserProfileModel,
@@ -27,7 +32,14 @@ class UserProfileSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = UserProfileModel
-        fields = [ 'prefer', 'fullname', 'location', 'gender', 'age', 'introduction', 'birthday', 'phone_number', 'rank']
+        fields = [ 'prefer', 'fullname', 'location', 'gender', 'age', 'introduction', 'birthday', 'phone_number', 'rank', 'img']
+
+
+class UserProfilePutSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = UserProfileModel
+        fields = [ 'prefer', 'fullname', 'location', 'introduction', 'img']
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -48,6 +60,8 @@ class UserSerializer(serializers.ModelSerializer):
 
 class UserSiginUpSerializer(serializers.ModelSerializer):
 
+    userprofile = UserProfileSerializer()
+    
     class Meta:
         model = UserModel
         fields = [ "username", "password", "email", "user_category", "join_date", "userprofile" ]
@@ -55,8 +69,16 @@ class UserSiginUpSerializer(serializers.ModelSerializer):
         extra_kwargs = {
             # write_only : 해당 필드를 쓰기 전용으로 만들어 준다.
             # 쓰기 전용으로 설정 된 필드는 직렬화 된 데이터에서 보여지지 않는다.
-            "password": {'write_only': True}, # default : False
+            "username": {
+                # 유효성 검사
+                'error_messages': {
+                    # required : 값이 입력되지 않았을 때 보여지는 메세지
+                    'required': '아이디를 입력해주세요.',
+                    # invalid : 값의 포맷이 맞지 않을 때 보여지는 메세지
+                    'invalid': '알맞은 형식의 아이디를 입력해주세요.'
+                    },},
             "email": {
+                # 유효성 검사
                 # error_messages : 에러 메세지를 자유롭게 설정 할 수 있다.
                 'error_messages': {
                     # required : 값이 입력되지 않았을 때 보여지는 메세지
@@ -64,18 +86,12 @@ class UserSiginUpSerializer(serializers.ModelSerializer):
                     # invalid : 값의 포맷이 맞지 않을 때 보여지는 메세지
                     'invalid': '알맞은 형식의 이메일을 입력해주세요.'
                     },
-                    # required : validator에서 해당 값의 필요 여부를 판단한다.
-                    'required': False # default : True
-                    },
+                },
             }
 
-    # username = serializers.CharField(required=True, min_length=4)
-    # email = serializers.EmailField(required=True)
-    # password = serializers.CharField(required=True, min_length=4)
-
-    userprofile = UserProfileSerializer()
-
     def create(self, validated_data):
+        print("8번")
+        print(validated_data)
         # User object 생성
         user_category_id = validated_data['user_category']
         user = UserModel.objects.create(
@@ -84,20 +100,47 @@ class UserSiginUpSerializer(serializers.ModelSerializer):
             user_category = user_category_id,
         )
         user.set_password(validated_data['password'])
-        user.save()
 
         # UserProfile object 생성
         user_profile = validated_data.pop("userprofile")
-        # 첫 회원가입시 id = 1 : name = 씨앗 default
-        user_profile = UserProfileModel.objects.create(user=user, rank_id=1, **user_profile)
+        if user_profile:
+            # 첫 회원가입시 id = 1 : name = 씨앗 default
+            user_profile = UserProfileModel.objects.create(
+                user=user,
+                rank_id=1,
+                **user_profile,
+                )
+            user.save()
+            return user
 
-        return user
 
+class UserSiginPutSerializer(serializers.ModelSerializer):
+
+    userprofile = UserProfilePutSerializer()
+    
+    class Meta:
+        model = UserModel
+        fields = ["username", "password", "email", "userprofile"]
+
+        extra_kwargs = {
+            # write_only : 해당 필드를 쓰기 전용으로 만들어 준다.
+            # 쓰기 전용으로 설정 된 필드는 직렬화 된 데이터에서 보여지지 않는다.
+            "username": {
+                'required': False,
+            }
+        }
 
     def update(self, instance, validated_data):
-        # instance에는 입력된 object가 담긴다.
-        user_profile = validated_data.pop("userprofile")
+        print("6번")
+        print(instance)
+        print("7번")
+        print(validated_data)
         
+        user_profile = validated_data.pop("userprofile")
+        print("8번")
+        print(user_profile)
+        
+        # instance에는 입력된 object가 담긴다.
         # 유저 필수 정보 수정
         for key, value in validated_data.items():
             if key == "password":
@@ -105,6 +148,7 @@ class UserSiginUpSerializer(serializers.ModelSerializer):
                 continue
             
             setattr(instance, key, value)
+
         instance.save()
 
         # 프로필 정보 수정
