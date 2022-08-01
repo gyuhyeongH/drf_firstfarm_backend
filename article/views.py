@@ -164,26 +164,32 @@ class ArticleDetailView(APIView):
             return Response({"message": f'${serializer.errors}'}, status=status.HTTP_400_BAD_REQUEST)
 
     def put(self, request, article_id):
-        user = request.user
+        # user = request.user
+        user = 1
         article = ArticleModel.objects.get(id=article_id)
         serializer = ArticleSerializer(article, data=request.data, partial=True)
 
         # if user.is_anonymous:
         #     return Response({"error": "로그인 후 이용해주세요"}, status=status.HTTP_400_BAD_REQUEST)
 
-        if serializer.is_valid():
+        if serializer.is_valid(raise_exception=True):
             serializer.save()
             return Response({"message": "게시글이 수정되었습니다."}, status=status.HTTP_200_OK)
 
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    # def delete(self, request, article_id):
-    #     user = request.user
-    #     article = ArticleModel.objects.get(id=article_id)
-    #     if user == article.user_id:
-    #         return Response({"message": "게시글 마감 성공."}, status=status.HTTP_200_OK)
-    #     else:
-    #         return Response({"message": "게시글 마감 실패."}, status=status.HTTP_400_BAD_REQUEST)
+    def delete(self, request, article_id):
+        # user = request.user
+        user = 1
+        article = ArticleModel.objects.get(id=article_id)
+        if user == article.user.id:
+            article.display_article = False
+            article.save()
+            print(article.display_article)
+            return Response({"message": "게시글 마감 성공."}, status=status.HTTP_200_OK)
+        else:
+            return Response({"message": "게시글 마감 실패."}, status=status.HTTP_400_BAD_REQUEST)
 
 
 class ArticleApplyView(APIView):
@@ -191,7 +197,9 @@ class ArticleApplyView(APIView):
     def post(self, request, article_id):
         # user = request.user
         # article = ArticleModel.objects.get(id=article_id)
+        print(request.data)
         serializer = ArticleApplySerializer(data=request.data)
+
 
         # if user.is_anonymous:
         #     return Response({"error": "로그인 후 이용해주세요"}, status=status.HTTP_400_BAD_REQUEST)
