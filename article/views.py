@@ -11,7 +11,7 @@ from .models import Apply as ApplyModel
 from .models import Review as ReviewModel
 from article.serializers import ArticleSerializer
 
-from article.serializers import ArticleApplySerializer, UserApplySerializer
+from article.serializers import ArticleApplySerializer, UserApplySerializer, MyPageSerializer
 from article.serializers import ReviewSerializer
 # from konlpy.tag import Mecab
 # from gensim.test.utils import common_texts
@@ -215,8 +215,8 @@ class FarmMyPageView(APIView):
         # user = request.user.id # 로그인 한 유저
         user = 2
         articles = ArticleModel.objects.filter(user=user)  # 로그인 한 유저가 올린 공고들을 가져옴
-        articles = ArticleSerializer(articles, many=True).data
-
+        articles = MyPageSerializer(articles, many=True).data
+        print(articles[0]["img1"])
         return Response(articles, status=status.HTTP_200_OK)  # 로그인 한 유저가 올린 공고들의 serializer 를 넘겨줌
 
     # 삭제 부분은 디테일 페이지에서 구현 되어있어서 우선 지워둠.

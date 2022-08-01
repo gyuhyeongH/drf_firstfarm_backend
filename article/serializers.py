@@ -40,20 +40,45 @@ class ArticleSerializer(serializers.ModelSerializer):
         instance.save()
         return instance
 
+class MyPageSerializer(serializers.ModelSerializer):
+    userinfo = serializers.SerializerMethodField(read_only=True)
+
+    def get_userinfo(self,obj):
+        return {
+            "email": obj.user.email,
+            "rank" :obj.user.userprofile.rank.rank_name,
+            "birthday":obj.user.userprofile.birthday,
+            "fullname": obj.user.userprofile.fullname,
+            "location": obj.user.userprofile.location,
+            "prefer": obj.user.userprofile.prefer,
+            "gender": obj.user.userprofile.gender,
+            "introduction": obj.user.userprofile.introduction,
+            "phone_number": obj.user.userprofile.phone_number,
+            "points":obj.user.userprofile.points,
+            "profile_img": obj.user.userprofile.img.url,
+        }
+    class Meta:
+        model = ArticleModel
+        fields = [
+            "id","user","article_category","farm_name","location","title","cost","requirement","period","img1","img2","img3",
+            "desc","display_article","exposure_end_date","created_at","updated_at","userinfo"
+        ]
 class ArticleApplySerializer(serializers.ModelSerializer):
     userinfo = serializers.SerializerMethodField(read_only=True)
 
     def get_userinfo(self, obj):
         return {
-            "email":obj.user.email,
+            "email": obj.user.email,
+            "rank" :obj.user.userprofile.rank.rank_name,
+            "birthday":obj.user.userprofile.birthday,
             "fullname": obj.user.userprofile.fullname,
-            "location":obj.user.userprofile.location,
+            "location": obj.user.userprofile.location,
             "prefer": obj.user.userprofile.prefer,
             "gender": obj.user.userprofile.gender,
-            "age": obj.user.userprofile.age,
             "introduction": obj.user.userprofile.introduction,
             "phone_number": obj.user.userprofile.phone_number,
-            # "img": obj.user.userprofile.img if obj.user.userprofile else None, <- unicodeDecodeError
+            "points":obj.user.userprofile.points,
+            # "profile_img": obj.user.userprofile.img
         }
     class Meta:
         model = ApplyModel
@@ -68,9 +93,23 @@ class ArticleApplySerializer(serializers.ModelSerializer):
 
 class UserApplySerializer(serializers.ModelSerializer):
     articleinfo = serializers.SerializerMethodField(read_only=True)
+    userinfo = serializers.SerializerMethodField(read_only=True)
 
+    def get_userinfo(self, obj):
+        return {
+            "email": obj.user.email,
+            "fullname": obj.user.userprofile.fullname,
+            "location": obj.user.userprofile.location,
+            "prefer": obj.user.userprofile.prefer,
+            "gender": obj.user.userprofile.gender,
+            "rank": obj.user.userprofile.rank.rank_name,
+            "age": obj.user.userprofile.age,
+            "phone_number": obj.user.userprofile.phone_number,
+            "img": obj.user.userprofile.img.url,
+        }
     def get_articleinfo(self, obj):
         return {
+            "article_id":obj.article.id,
             "farm_name":obj.article.farm_name,
             "location": obj.article.location ,
             "title": obj.article.title,
@@ -80,10 +119,16 @@ class UserApplySerializer(serializers.ModelSerializer):
         }
     class Meta:
         model = ApplyModel
-        fields = ["user","article","accept","articleinfo"]
+        fields = ["user","article","accept","articleinfo","userinfo"]
 
 # ReviewSerializer
 class ReviewSerializer(serializers.ModelSerializer):
+    articleinfo = serializers.SerializerMethodField(read_only=True)
+    def get_articleinfo(self, obj):
+        return {
+            "title":obj.article.title,
+            "period": obj.article.period,
+        }
     class Meta:
         model = ReviewModel
-        fields = '__all__'
+        fields = ["id","user","article","rate","img1","img2","img3","content","created_at","updated_at","articleinfo"]
