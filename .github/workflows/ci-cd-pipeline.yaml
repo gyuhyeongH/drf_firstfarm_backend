@@ -18,7 +18,7 @@ jobs:
         run: |
           python manage.py makemigrations
           python manage.py migrate
-          python manage.py test article
+          python manage.py test
   build-image:
     needs: run-test-code
     runs-on: ubuntu-latest
