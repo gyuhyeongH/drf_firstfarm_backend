@@ -9,7 +9,7 @@ from .models import Apply as ApplyModel
 from .models import Review as ReviewModel
 from article.serializers import ArticleSerializer
 
-from article.serializers import ArticleApplySerializer, UserApplySerializer
+from article.serializers import ArticleApplySerializer, UserApplySerializer, MyPageSerializer
 from article.serializers import ReviewSerializer
 
 try:
@@ -137,21 +137,25 @@ class ArticleDetailView(APIView):
 
         if article.user.id == request.user.id:
             article_serializer = ArticleSerializer(article, data=request.data, partial=True)
-
-            if article_serializer.is_valid():
+   
+        if article_serializer.is_valid():
                 article_serializer.save()
 
                 return Response({"message": "게시글이 수정되었습니다."}, status=status.HTTP_200_OK)
 
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    # def delete(self, request, article_id):
-    #     user = request.user
-    #     article = ArticleModel.objects.get(id=article_id)
-    #     if user == article.user_id:
-    #         return Response({"message": "게시글 마감 성공."}, status=status.HTTP_200_OK)
-    #     else:
-    #         return Response({"message": "게시글 마감 실패."}, status=status.HTTP_400_BAD_REQUEST)
+    def delete(self, request, article_id):
+        # user = request.user
+        user = 1
+        article = ArticleModel.objects.get(id=article_id)
+        if user == article.user.id:
+            article.display_article = False
+            article.save()
+            print(article.display_article)
+            return Response({"message": "게시글 마감 성공."}, status=status.HTTP_200_OK)
+        else:
+            return Response({"message": "게시글 마감 실패."}, status=status.HTTP_400_BAD_REQUEST)
 
 
 class ArticleApplyView(APIView):
@@ -160,6 +164,7 @@ class ArticleApplyView(APIView):
         article = ArticleModel.objects.get(id=article_id)
         data = {"article": article.id, "user": request.user.id}
         serializer = ArticleApplySerializer(data=data, partial=True)
+
 
         if serializer.is_valid():
             get_rate_rank_point(request.user, 3)  # 테스트 용 user_id 1 임의로 전달
@@ -179,8 +184,8 @@ class FarmMyPageView(APIView):
         # user = request.user.id # 로그인 한 유저
         user = 2
         articles = ArticleModel.objects.filter(user=user)  # 로그인 한 유저가 올린 공고들을 가져옴
-        articles = ArticleSerializer(articles, many=True).data
-
+        articles = MyPageSerializer(articles, many=True).data
+        print(articles[0]["img1"])
         return Response(articles, status=status.HTTP_200_OK)  # 로그인 한 유저가 올린 공고들의 serializer 를 넘겨줌
 
     # 삭제 부분은 디테일 페이지에서 구현 되어있어서 우선 지워둠.
