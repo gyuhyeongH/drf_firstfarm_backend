@@ -15,15 +15,18 @@ RUN apk add --no-cache libstdc++ ;\
     cd $MECAB_KO_DIC_FILENAME; sh ./autogen.sh ; ./configure; make; make install ; cd ..; \
     apk del .builddeps ;\
     rm -rf mecab-*
+# Python
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends apt-utils && \
+    apt-get -y install software-properties-common && \
+    add-apt-repository -y ppa:deadsnakes/ppa && \
+    apt-get update --fix-missing && \
+    apt-get -y install --fix-missing python3.6 && \
+    apt-get -y install --fix-missing python3.6-dev && \
+    apt-get -y install --fix-missing python3-pip && \
+    python3.6 -m pip install pip --upgrade
 
-RUN wget https://www.python.org/ftp/python/3.8.5/Python-3.8.5.tar.xz
-RUN tar xvf Python-3.8.5.tar.xz
-WORKDIR /Python-3.8.5
-RUN apt -y install build-essential
-RUN apt-get install zlib1g-dev
-RUN ./configure
-RUN make
-RUN make altinstall
+ENV HOME .
 
 ADD . /usr/src/app/
 WORKDIR /usr/src/app/
