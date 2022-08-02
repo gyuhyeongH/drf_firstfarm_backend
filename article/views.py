@@ -12,11 +12,12 @@ from article.serializers import ArticleSerializer
 from article.serializers import ArticleApplySerializer, UserApplySerializer, MyPageSerializer
 from article.serializers import ReviewSerializer
 
-from konlpy.tag import Mecab
-from gensim.test.utils import common_texts
-from gensim.models.doc2vec import Doc2Vec, TaggedDocument
-
-
+try:
+    from konlpy.tag import Mecab
+    from gensim.test.utils import common_texts
+    from gensim.models.doc2vec import Doc2Vec, TaggedDocument
+except:
+    pass
 
 
 # 평가점수를 point에 더하고 랭크를 변경하는 함수
@@ -77,34 +78,35 @@ class ArticleView(APIView):
 
 def recommends(articles, user_prefer):
     recommend_articles = []
+    try:
+        article_info = [article.desc for article in articles]
 
-    article_info = [article.desc for article in articles]
+        mecab = Mecab()
+        tmp_list = [[] for _ in range(len(article_info))]
+        stopwords = []
 
-    mecab = Mecab()
-    tmp_list = [[] for _ in range(len(article_info))]
-    stopwords = []
+        for i in range(0, len(article_info)):
+            tmp = mecab.nouns(article_info[i])
+            tokens = []
+            for token in tmp:
+                if not token in stopwords:
+                    tokens.append(token)
+            tmp_list[i] = tokens
+            # article 형태소 분석 완료.
 
-    for i in range(0, len(article_info)):
-        tmp = mecab.nouns(article_info[i])
-        tokens = []
-        for token in tmp:
-            if not token in stopwords:
-                tokens.append(token)
-        tmp_list[i] = tokens
-        # article 형태소 분석 완료.
+        documents = [TaggedDocument(doc, [i]) for i, doc in enumerate(tmp_list)]
 
-    documents = [TaggedDocument(doc, [i]) for i, doc in enumerate(tmp_list)]
+        model = Doc2Vec(documents, vector_size=10, window=1, epochs=1000, min_count=0, workers=4)
 
-    model = Doc2Vec(documents, vector_size=10, window=1, epochs=1000, min_count=0, workers=4)
+        prefer = mecab.nouns(user_prefer)
 
-    prefer = mecab.nouns(user_prefer)
+        inferred_doc_vec = model.infer_vector(prefer)
+        most_similar_docs = model.docvecs.most_similar([inferred_doc_vec], topn=10)
 
-    inferred_doc_vec = model.infer_vector(prefer)
-    most_similar_docs = model.docvecs.most_similar([inferred_doc_vec], topn=10)
-
-    for index, similarity in most_similar_docs:
-        recommend_articles.append(articles[index])
-
+        for index, similarity in most_similar_docs:
+            recommend_articles.append(articles[index])
+    except:
+        pass
     return recommend_articles
 
 
