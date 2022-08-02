@@ -165,7 +165,8 @@ CORS_ALLOWED_ORIGINS = [
     "http://localhost:5500",
     "http://3.35.37.28:8000",
     "http://3.35.37.28",
-    "rbgud.shop",
+    "http://rbgud.shop",
+    "https://rbgud.shop",
 ]
 
 CORS_ALLOW_METHODS = [
