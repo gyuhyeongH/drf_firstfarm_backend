@@ -2,7 +2,7 @@ name: ci-cd-pipeline
 on:
   push:
     branches:
-      - main
+      - recommend
 jobs:
   run-test-code:
     runs-on: ubuntu-latest
