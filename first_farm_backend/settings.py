@@ -163,6 +163,7 @@ CORS_ORIGIN_ALLOW_ALL = True
 CORS_ALLOWED_ORIGINS = [
     "http://127.0.0.1:5500",
     "http://localhost:5500",
+    "http://3.35.37.28"
 ]
 
 CORS_ALLOW_METHODS = [
