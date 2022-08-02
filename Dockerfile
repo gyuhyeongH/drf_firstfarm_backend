@@ -14,13 +14,16 @@ RUN apk add --no-cache libstdc++ ;\
     wget -O - $MECAB_KO_DIC_URL | tar zxfv - ;\
     cd $MECAB_KO_DIC_FILENAME; sh ./autogen.sh ; ./configure; make; make install ; cd ..; \
     apk del .builddeps ;\
-    rm -rf mecab-* \
+    rm -rf mecab-*
 
+apt install -y python python3 python3-distutils curl &&
+    curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py &&
+    python3 get-pip.py &&
+    python2 get-pip.py &&
+    rm get-pip.py
 RUN mkdir /usr/src/app/
 
 ADD . /usr/src/app/
-
-
 WORKDIR /usr/src/app/
 
 
