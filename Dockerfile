@@ -16,13 +16,14 @@ RUN apk add --no-cache libstdc++ ;\
     apk del .builddeps ;\
     rm -rf mecab-*
 
-RUN apt update -y
-RUN apt install python3.6 -y
-RUN apt install vim -y
-RUN apt install net-tools -y
-RUN apt install iputils-ping -y
-RUN apt install python3-pip -y
-RUN mkdir /usr/src/app/
+RUN wget https://www.python.org/ftp/python/3.8.5/Python-3.8.5.tar.xz
+RUN tar xvf Python-3.8.5.tar.xz
+WORKDIR /Python-3.8.5
+RUN apt -y install build-essential
+RUN apt-get install zlib1g-dev
+RUN ./configure
+RUN make
+RUN make altinstall
 
 ADD . /usr/src/app/
 WORKDIR /usr/src/app/
