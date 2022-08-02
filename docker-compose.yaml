@@ -21,8 +21,9 @@ services:
   alpine:
     build: ./alpine
     volumes:
-    - ./:/usr/src/app/
-    working_dir: /usr/src/app/
+      - ./alpine:/alpine
+    stdin_open: true
+    tty: true
   web:
     image: ckacl59/first_farm_backend:latest
     command: gunicorn first_farm_backend.wsgi:application --bind 0.0.0.0:8000
