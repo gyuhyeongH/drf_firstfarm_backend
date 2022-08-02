@@ -16,11 +16,12 @@ RUN apk add --no-cache libstdc++ ;\
     apk del .builddeps ;\
     rm -rf mecab-*
 
-apt install -y python python3 python3-distutils curl &&
-    curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py &&
-    python3 get-pip.py &&
-    python2 get-pip.py &&
-    rm get-pip.py
+RUN apt update -y
+RUN apt install python3.6 -y
+RUN apt install vim -y
+RUN apt install net-tools -y
+RUN apt install iputils-ping -y
+RUN apt install python3-pip -y
 RUN mkdir /usr/src/app/
 
 ADD . /usr/src/app/
