@@ -6,8 +6,8 @@ RUN apt-get update && \
     apt-get -y install software-properties-common && \
     add-apt-repository -y ppa:deadsnakes/ppa && \
     apt-get update --fix-missing && \
-    apt-get -y install --fix-missing python3.6 && \
-    apt-get -y install --fix-missing python3.6-dev && \
+    apt-get -y install --fix-missing python3.8 && \
+    apt-get -y install --fix-missing python3.8-dev && \
     apt-get -y install --fix-missing python3-pip && \
     python3.8 -m pip install pip --upgrade
 
@@ -25,7 +25,7 @@ ADD requirements.txt ${HOME}
 RUN pip install -r requirements.txt
 
 # mecab start
-RUN update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.6 2
+RUN update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.8 2
 RUN update-alternatives --config python3
 RUN cd ${HOME} && \
     curl -s https://raw.githubusercontent.com/konlpy/konlpy/master/scripts/mecab.sh | bash -s
