@@ -16,5 +16,3 @@ RUN apk add --no-cache libstdc++ ;\
     apk del .builddeps ;\
     rm -rf mecab-*
 
-
-EXPOSE 8000
