@@ -14,11 +14,7 @@ RUN apk add --no-cache libstdc++ ;\
     wget -O - $MECAB_KO_DIC_URL | tar zxfv - ;\
     cd $MECAB_KO_DIC_FILENAME; sh ./autogen.sh ; ./configure; make; make install ; cd ..; \
     apk del .builddeps ;\
-    rm -rf mecab-* \
-RUN apk update \
-    apk upgrade \
-    apk add python3 \
-    apk add --update py3-pip \
+    rm -rf mecab-*
 
 
 
