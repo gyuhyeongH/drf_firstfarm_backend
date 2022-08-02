@@ -51,7 +51,7 @@ class ArticleView(APIView):
             request_location_choice = location_list[int(request_location_choice)]
 
         if request_article_category == '':
-            articles = ArticleModel.objects.filter(Q(location__contains=request_location_choice) & Q(display_article=0))
+            articles = ArticleModel.objects.filter(Q(location__contains=request_location_choice) & Q(display_article=True))
             articles_serializer = ArticleSerializer(articles, many=True).data
 
             return Response(articles_serializer, status=status.HTTP_200_OK)
