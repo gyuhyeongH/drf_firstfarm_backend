@@ -1,0 +1,38 @@
+version: "3.3"
+
+services:
+  nginx:
+    build: ./nginx
+    volumes:
+      - static_volume:/usr/src/app/static
+      - media_volume:/usr/src/app/media
+      - ./data/certbot/conf:/etc/letsencrypt
+      - ./data/certbot/www:/var/www/certbot
+    ports:
+       - 80:80
+       - 443:443
+    depends_on:
+      - web
+  certbot:
+    image: certbot/certbot
+    volumes:
+      - ./data/certbot/conf:/etc/letsencrypt
+      - ./data/certbot/www:/var/www/certbot
+  web:
+    image: ckacl59/first_farm_backend:latest
+    command: gunicorn first_farm_backend.wsgi:application --bind 0.0.0.0:8000
+    ports:
+      - 8000:8000
+
+    working_dir: /usr/src/app/
+    expose:
+      - 8000
+    env_file:
+      - ./.env
+    volumes:
+      - ./:/usr/src/app/
+      - static_volume:/usr/src/app/static
+      - media_volume:/usr/src/app/media
+volumes:
+  static_volume:
+  media_volume:

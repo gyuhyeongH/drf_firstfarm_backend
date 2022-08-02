@@ -24,26 +24,26 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/4.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-secret_file = os.path.join(BASE_DIR, 'secrets.json')
-with open(secret_file) as f:
-    secrets = json.loads(f.read())
-
-
-def get_secret(setting, secrets=secrets):
-    try:
-        return secrets[setting]
-    except KeyError:
-        # return ""
-        error_msg = "Set the {} environment variable".format(setting)
-        raise ImproperlyConfigured(error_msg)
-
-
-SECRET_KEY = get_secret("SECRET_KEY")
-
+# secret_file = os.path.join(BASE_DIR, 'secrets.json')
+# with open(secret_file) as f:
+#     secrets = json.loads(f.read())
+#
+#
+# def get_secret(setting, secrets=secrets):
+#     try:
+#         return secrets[setting]
+#     except KeyError:
+#         # return ""
+#         error_msg = "Set the {} environment variable".format(setting)
+#         raise ImproperlyConfigured(error_msg)
+#
+#
+# SECRET_KEY = get_secret("SECRET_KEY")
+SECRET_KEY = os.environ.get("SECRET_KEY")
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['127.0.0.1','0.0.0.0','3.35.37.28','rbgud.shop','www.rbgud.shop']
 
 
 # Application definition
@@ -152,7 +152,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # 이미지 업로드 경로
 MEDIA_URL = '/media/'
 
-MEDIA_ROOT = BASE_DIR / 'midia'
+MEDIA_ROOT = BASE_DIR / 'media'
 
 AUTH_USER_MODEL = 'user.User'
 
@@ -163,6 +163,10 @@ CORS_ORIGIN_ALLOW_ALL = True
 CORS_ALLOWED_ORIGINS = [
     "http://127.0.0.1:5500",
     "http://localhost:5500",
+    "http://3.35.37.28:8000",
+    "http://3.35.37.28",
+    "http://rbgud.shop",
+    "https://rbgud.shop",
 ]
 
 CORS_ALLOW_METHODS = [
@@ -186,7 +190,6 @@ CORS_ALLOW_HEADERS = [
     'x-requested-with',
     'choice',
     'category',
-
 ]
 
 REST_FRAMEWORK = {
