@@ -78,9 +78,9 @@ class ArticleView(APIView):
 
 def recommends(articles, user_prefer):
     recommend_articles = []
-    try:
-        article_info = [article.desc for article in articles]
 
+    article_info = [article.desc for article in articles]
+    try:
         mecab = Mecab()
         tmp_list = [[] for _ in range(len(article_info))]
         stopwords = []
