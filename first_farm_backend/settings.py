@@ -163,7 +163,7 @@ STATICFILES_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
 # STATIC_ROOT = BASE_DIR / 'staticfiles'
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.0/ref/settings/#default-auto-field
-DEFAULT_FILE_STORAGE = 'config.asset_storage.MediaStorage'
+DEFAULT_FILE_STORAGE = 'config.s3media.MediaStorage'
 # DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 #
 # # 이미지 업로드 경로
