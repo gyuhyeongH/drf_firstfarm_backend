@@ -43,7 +43,7 @@ class User(AbstractBaseUser):
     # 회원가입 정보
     username = models.CharField(verbose_name="사용자 계정", max_length=50, unique=True)
     password = models.CharField(verbose_name="사용자 비밀번호", max_length=128)
-    email = models.EmailField(verbose_name="사용자 이메일", max_length=254, unique=True)
+    email = models.EmailField(verbose_name="사용자 이메일", max_length=254)
     join_date = models.DateTimeField(verbose_name="가입일", auto_now_add=True)
 
     # user category

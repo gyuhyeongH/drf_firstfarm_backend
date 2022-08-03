@@ -9,7 +9,7 @@ from .models import Apply as ApplyModel
 from .models import Review as ReviewModel
 from article.serializers import ArticleSerializer
 
-from article.serializers import ArticleApplySerializer, UserApplySerializer
+from article.serializers import ArticleApplySerializer, UserApplySerializer, MyPageSerializer
 from article.serializers import ReviewSerializer
 
 try:
@@ -51,17 +51,21 @@ class ArticleView(APIView):
             request_location_choice = location_list[int(request_location_choice)]
 
         if request_article_category == '':
-            articles = ArticleModel.objects.filter(Q(location__contains=request_location_choice) & Q(display_article=0))
+            articles = ArticleModel.objects.filter(Q(location__contains=request_location_choice) & Q(display_article=True))
             articles_serializer = ArticleSerializer(articles, many=True).data
 
             return Response(articles_serializer, status=status.HTTP_200_OK)
 
         elif request_article_category == '3':
-            articles = ArticleModel.objects.filter(display_article=True)
-            recommend_articles = recommends(articles, request.user.userprofile.prefer)  # 추천 시스템 함수
-            recommend_articles_serializer = ArticleSerializer(recommend_articles, many=True).data
+            if request.user:
+                articles = ArticleModel.objects.filter(display_article=True)
+                recommend_articles = recommends(articles, request.user.userprofile.prefer)  # 추천 시스템 함수
+                recommend_articles_serializer = ArticleSerializer(recommend_articles, many=True).data
 
-            return Response(recommend_articles_serializer, status=status.HTTP_200_OK)
+                return Response(recommend_articles_serializer, status=status.HTTP_200_OK)
+            else:
+                return Response(status=status.HTTP_400_BAD_REQUEST)
+
 
         else:
             articles = ArticleModel.objects.filter(
@@ -74,13 +78,11 @@ class ArticleView(APIView):
 
 def recommends(articles, user_prefer):
     recommend_articles = []
-    article_info = []
     try:
-        for article in articles:
-            article_info.append(article.desc)
+        article_info = [article.desc for article in articles]
 
         mecab = Mecab()
-        tmp_list = [0] * len(article_info)
+        tmp_list = [[] for _ in range(len(article_info))]
         stopwords = []
 
         for i in range(0, len(article_info)):
@@ -137,7 +139,7 @@ class ArticleDetailView(APIView):
 
         if article.user.id == request.user.id:
             article_serializer = ArticleSerializer(article, data=request.data, partial=True)
-
+   
             if article_serializer.is_valid():
                 article_serializer.save()
 
@@ -145,13 +147,17 @@ class ArticleDetailView(APIView):
 
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    # def delete(self, request, article_id):
-    #     user = request.user
-    #     article = ArticleModel.objects.get(id=article_id)
-    #     if user == article.user_id:
-    #         return Response({"message": "게시글 마감 성공."}, status=status.HTTP_200_OK)
-    #     else:
-    #         return Response({"message": "게시글 마감 실패."}, status=status.HTTP_400_BAD_REQUEST)
+    def delete(self, request, article_id):
+        # user = request.user
+        user = 1
+        article = ArticleModel.objects.get(id=article_id)
+        if user == article.user.id:
+            article.display_article = False
+            article.save()
+            print(article.display_article)
+            return Response({"message": "게시글 마감 성공."}, status=status.HTTP_200_OK)
+        else:
+            return Response({"message": "게시글 마감 실패."}, status=status.HTTP_400_BAD_REQUEST)
 
 
 class ArticleApplyView(APIView):
@@ -160,6 +166,7 @@ class ArticleApplyView(APIView):
         article = ArticleModel.objects.get(id=article_id)
         data = {"article": article.id, "user": request.user.id}
         serializer = ArticleApplySerializer(data=data, partial=True)
+
 
         if serializer.is_valid():
             get_rate_rank_point(request.user, 3)  # 테스트 용 user_id 1 임의로 전달
@@ -179,8 +186,8 @@ class FarmMyPageView(APIView):
         # user = request.user.id # 로그인 한 유저
         user = 2
         articles = ArticleModel.objects.filter(user=user)  # 로그인 한 유저가 올린 공고들을 가져옴
-        articles = ArticleSerializer(articles, many=True).data
-
+        articles = MyPageSerializer(articles, many=True).data
+        print(articles[0]["img1"])
         return Response(articles, status=status.HTTP_200_OK)  # 로그인 한 유저가 올린 공고들의 serializer 를 넘겨줌
 
     # 삭제 부분은 디테일 페이지에서 구현 되어있어서 우선 지워둠.
