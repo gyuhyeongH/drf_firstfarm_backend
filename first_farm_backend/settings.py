@@ -9,13 +9,11 @@ https://docs.djangoproject.com/en/4.0/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.0/ref/settings/
 """
-
 from pathlib import Path
 from datetime import timedelta
 import os
 import json
 from django.core.exceptions import ImproperlyConfigured
-import pymysql
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -41,9 +39,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # SECRET_KEY = get_secret("SECRET_KEY")
 SECRET_KEY = os.environ.get("SECRET_KEY")
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.environ.get("DEBUG",'0')
+DEBUG = os.environ.get("DEBUG")
 
-ALLOWED_HOSTS = [os.environ.get("DJANGO_ALLOWED_HOSTS",'')]
+ALLOWED_HOSTS = [os.environ.get("ALLOWED_HOSTS")]
 CSRF_TRUSTED_ORIGINS = ['https://rbgud.shop']
 
 # Application definition
@@ -62,6 +60,7 @@ INSTALLED_APPS = [
 
     'rest_framework',
     'rest_framework_simplejwt',
+    'storages',
 ]
 
 MIDDLEWARE = [
@@ -99,18 +98,14 @@ WSGI_APPLICATION = 'first_farm_backend.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/4.0/ref/settings/#databases
 
-pymysql.install_as_MySQLdb()
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'HOST': os.environ.get("SQL_HOST", 'localhost'),
-        'NAME': os.environ.get("SQL_DATABASE", BASE_DIR / "db.sqlite3"),
-        'USER': os.environ.get("SQL_USER", 'user'),
-        'PASSWORD': os.environ.get("SQL_PASSWORD", 'password'),
-        'PORT': os.environ.get("SQL_PORT", '3306'),
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
+
 # Password validation
 # https://docs.djangoproject.com/en/4.0/ref/settings/#auth-password-validators
 
