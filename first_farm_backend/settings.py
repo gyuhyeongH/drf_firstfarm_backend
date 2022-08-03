@@ -41,7 +41,7 @@ SECRET_KEY = os.environ.get("SECRET_KEY")
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ["127.0.0.1","0.0.0.0","3.35.37.28","rbgud.shop","www.rbgud.shop"]
+ALLOWED_HOSTS = ["127.0.0.1", "0.0.0.0", "3.35.37.28", "rbgud.shop", "www.rbgud.shop"]
 CSRF_TRUSTED_ORIGINS = ['https://rbgud.shop']
 
 # Application definition
