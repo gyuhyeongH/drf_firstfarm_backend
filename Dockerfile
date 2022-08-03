@@ -20,7 +20,7 @@ RUN apt-get -qq update && \
   sh -c 'echo "dicdir=/usr/local/lib/mecab/dic/mecab-ko-dic" > /usr/local/etc/mecabrc' && \
   cd / && \
   rm -rf /var/lib/apt/lists/* /tmp/* && \
-  apt-get purge -y curl \
+  apt-get purge -y curl
 
 
 
