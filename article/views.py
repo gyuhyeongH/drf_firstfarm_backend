@@ -115,7 +115,6 @@ class ArticleDetailView(APIView):
 
     def get(self, request, article_id):
         article = ArticleModel.objects.get(id=article_id)
-        # authentication_classes = [JWTAuthentication]
 
         serializer = ArticleSerializer(article).data
         return Response(serializer, status=status.HTTP_200_OK)
@@ -148,13 +147,12 @@ class ArticleDetailView(APIView):
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def delete(self, request, article_id):
-        # user = request.user
-        user = 1
+        user = request.user.id
         article = ArticleModel.objects.get(id=article_id)
         if user == article.user.id:
             article.display_article = False
             article.save()
-            print(article.display_article)
+            # print(article.display_article)
             return Response({"message": "게시글 마감 성공."}, status=status.HTTP_200_OK)
         else:
             return Response({"message": "게시글 마감 실패."}, status=status.HTTP_400_BAD_REQUEST)

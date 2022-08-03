@@ -9,13 +9,11 @@ https://docs.djangoproject.com/en/4.0/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.0/ref/settings/
 """
-
 from pathlib import Path
 from datetime import timedelta
 import os
 import json
 from django.core.exceptions import ImproperlyConfigured
-import pymysql
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -41,14 +39,15 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # SECRET_KEY = get_secret("SECRET_KEY")
 SECRET_KEY = os.environ.get("SECRET_KEY")
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.environ.get("DEBUG",'0')
+DEBUG = True
 
-ALLOWED_HOSTS = [os.environ.get("DJANGO_ALLOWED_HOSTS",'')]
+ALLOWED_HOSTS = ["127.0.0.1","0.0.0.0","3.35.37.28","rbgud.shop","www.rbgud.shop"]
 CSRF_TRUSTED_ORIGINS = ['https://rbgud.shop']
 
 # Application definition
 
 INSTALLED_APPS = [
+    'storages',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -62,6 +61,7 @@ INSTALLED_APPS = [
 
     'rest_framework',
     'rest_framework_simplejwt',
+
 ]
 
 MIDDLEWARE = [
@@ -99,18 +99,14 @@ WSGI_APPLICATION = 'first_farm_backend.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/4.0/ref/settings/#databases
 
-pymysql.install_as_MySQLdb()
 
 DATABASES = {
     'default': {
-        'ENGINE': os.environ.get("SQL_ENGINE","django.db.backends.sqlite3"),
-        'HOST': os.environ.get("SQL_HOST", 'localhost'),
-        'NAME': os.environ.get("SQL_DATABASE", BASE_DIR / "db.sqlite3"),
-        'USER': os.environ.get("SQL_USER", 'user'),
-        'PASSWORD': os.environ.get("SQL_PASSWORD", 'password'),
-        'PORT': os.environ.get("SQL_PORT", '3306'),
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
+
 # Password validation
 # https://docs.djangoproject.com/en/4.0/ref/settings/#auth-password-validators
 
@@ -180,7 +176,6 @@ CORS_ALLOWED_ORIGINS = [
     "http://localhost:5500",
     "http://3.35.37.28:8000",
     "http://3.35.37.28",
-    "http://rbgud.shop",
     "https://rbgud.shop",
 ]
 

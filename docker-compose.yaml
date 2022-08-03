@@ -33,6 +33,7 @@ services:
       - ./:/usr/src/app/
       - static_volume:/usr/src/app/static
       - media_volume:/usr/src/app/media
+
 volumes:
   static_volume:
   media_volume:
