@@ -41,7 +41,8 @@ SECRET_KEY = os.environ.get("SECRET_KEY")
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.environ.get("DEBUG")
 
-ALLOWED_HOSTS = [os.environ.get("ALLOWED_HOSTS")]
+ALLOWED_HOSTS = [os.environ.get("DJANGO_ALLOWED_HOSTS")]
+print(ALLOWED_HOSTS)
 CSRF_TRUSTED_ORIGINS = ['https://rbgud.shop']
 
 # Application definition
@@ -175,7 +176,6 @@ CORS_ALLOWED_ORIGINS = [
     "http://localhost:5500",
     "http://3.35.37.28:8000",
     "http://3.35.37.28",
-    "http://rbgud.shop",
     "https://rbgud.shop",
 ]
 
