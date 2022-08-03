@@ -27,7 +27,7 @@ RUN apt-get -qq update && \
 RUN mkdir /usr/src/app/
 ADD . /usr/src/app/
 WORKDIR /usr/src/app/
-RUN pip install --upgrade pip && apt-get install libmysqlclient-dev
+RUN pip install --upgrade pip && apt-get -y install libmysqlclient-dev
 RUN pip install -r requirements.txt
 
 EXPOSE 8000
