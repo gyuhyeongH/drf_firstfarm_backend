@@ -1,4 +1,4 @@
-FROM python:3.9-slim
+FROM python:3.8-slim
 
 RUN apt-get -qq update && \
   # slim variants dont have man page
