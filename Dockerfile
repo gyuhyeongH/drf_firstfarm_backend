@@ -20,13 +20,14 @@ RUN apt-get -qq update && \
   sh -c 'echo "dicdir=/usr/local/lib/mecab/dic/mecab-ko-dic" > /usr/local/etc/mecabrc' && \
   cd / && \
   rm -rf /var/lib/apt/lists/* /tmp/* && \
-  apt-get purge -y curl
+  apt-get purge -y curl \
+
 
 
 RUN mkdir /usr/src/app/
 ADD . /usr/src/app/
 WORKDIR /usr/src/app/
-RUN pip install --upgrade pip
+RUN pip install --upgrade pip && apt-get install libmysqlclient-dev
 RUN pip install -r requirements.txt
 
 EXPOSE 8000
