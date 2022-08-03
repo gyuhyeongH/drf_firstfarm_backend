@@ -38,10 +38,9 @@ services:
   db:
     image: mysql
     volumes:
-      - mysql_db:/var/lib/mysql/data
+      - mysql_db:/var/lib/mysql
     env_file:
       - ./.env.mysql.prod
-    command: mysqld --character-set-server=utf8 --collation-server=utf8_general_ci
     ports:
       - "3302:3302"
 
