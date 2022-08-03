@@ -39,15 +39,15 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # SECRET_KEY = get_secret("SECRET_KEY")
 SECRET_KEY = os.environ.get("SECRET_KEY")
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.environ.get("DEBUG")
+DEBUG = True
 
-ALLOWED_HOSTS = [os.environ.get("DJANGO_ALLOWED_HOSTS")]
-print(ALLOWED_HOSTS)
+ALLOWED_HOSTS = ["127.0.0.1","0.0.0.0","3.35.37.28","rbgud.shop","www.rbgud.shop"]
 CSRF_TRUSTED_ORIGINS = ['https://rbgud.shop']
 
 # Application definition
 
 INSTALLED_APPS = [
+    'storages',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -61,7 +61,7 @@ INSTALLED_APPS = [
 
     'rest_framework',
     'rest_framework_simplejwt',
-    'storages',
+
 ]
 
 MIDDLEWARE = [
