@@ -39,6 +39,8 @@ services:
     image: mysql
     volumes:
       - mysql_db:/var/lib/mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: "1234"
     env_file:
       - ./.env.mysql.prod
     ports:
