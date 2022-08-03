@@ -177,6 +177,7 @@ CORS_ALLOWED_ORIGINS = [
     "http://3.35.37.28:8000",
     "http://3.35.37.28",
     "https://rbgud.shop",
+    "https://62eac28487e5c50073cf5f2e--polite-paprenjak-e2afb5.netlify.app",
 ]
 
 CORS_ALLOW_METHODS = [
