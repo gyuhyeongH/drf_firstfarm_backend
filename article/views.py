@@ -51,17 +51,21 @@ class ArticleView(APIView):
             request_location_choice = location_list[int(request_location_choice)]
 
         if request_article_category == '':
-            articles = ArticleModel.objects.filter(Q(location__contains=request_location_choice) & Q(display_article=0))
+            articles = ArticleModel.objects.filter(Q(location__contains=request_location_choice) & Q(display_article=True))
             articles_serializer = ArticleSerializer(articles, many=True).data
 
             return Response(articles_serializer, status=status.HTTP_200_OK)
 
         elif request_article_category == '3':
-            articles = ArticleModel.objects.filter(display_article=True)
-            recommend_articles = recommends(articles, request.user.userprofile.prefer)  # 추천 시스템 함수
-            recommend_articles_serializer = ArticleSerializer(recommend_articles, many=True).data
+            if request.user:
+                articles = ArticleModel.objects.filter(display_article=True)
+                recommend_articles = recommends(articles, request.user.userprofile.prefer)  # 추천 시스템 함수
+                recommend_articles_serializer = ArticleSerializer(recommend_articles, many=True).data
 
-            return Response(recommend_articles_serializer, status=status.HTTP_200_OK)
+                return Response(recommend_articles_serializer, status=status.HTTP_200_OK)
+            else:
+                return Response(status=status.HTTP_400_BAD_REQUEST)
+
 
         else:
             articles = ArticleModel.objects.filter(
@@ -74,13 +78,11 @@ class ArticleView(APIView):
 
 def recommends(articles, user_prefer):
     recommend_articles = []
-    article_info = []
     try:
-        for article in articles:
-            article_info.append(article.desc)
+        article_info = [article.desc for article in articles]
 
         mecab = Mecab()
-        tmp_list = [0] * len(article_info)
+        tmp_list = [[] for _ in range(len(article_info))]
         stopwords = []
 
         for i in range(0, len(article_info)):
