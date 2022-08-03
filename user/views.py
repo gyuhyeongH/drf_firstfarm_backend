@@ -137,7 +137,7 @@ class UserView(APIView):
         # print(json_trans_data)
 
         # username 수정 불가
-        data.pop("username", "")
+        # data.pop("username", "")
         user_serializer = UserSiginPutSerializer(user, data=data.dict(), context={"request" : request})
         # print(user_serializer)
 

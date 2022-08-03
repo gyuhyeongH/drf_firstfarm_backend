@@ -39,7 +39,7 @@ class UserProfilePutSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = UserProfileModel
-        fields = [ 'prefer', 'fullname', 'location', 'introduction', 'img']
+        fields = [ 'prefer', 'location', 'introduction', 'img']
 
 
 class UserSerializer(serializers.ModelSerializer):
