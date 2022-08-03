@@ -32,11 +32,14 @@ class ArticleSerializer(serializers.ModelSerializer):
         review_rate_data = []
         review_content_data = []
         review_user_data = []
+        # review_img1_data = []
         # print(obj.review_set.all())
         for reviews in obj.review_set.all():
             review_rate_data.append(reviews.rate)
             review_content_data.append(reviews.content)
             review_user_data.append(reviews.user.username)
+            # review_img1_data.append(reviews.img1.url)
+            # print(review_img1_data)
             # print(reviews.user.username)
             # print({"rate" : review_rate_data, "content":review_content_data, "user":review_user_data})
         return {"rate" : review_rate_data, "content":review_content_data, "review_user":review_user_data}
