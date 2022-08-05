@@ -67,4 +67,4 @@ jobs:
           username: ubuntu
           key: ${{ secrets.PRIVATE_KEY }}
           port: 22
-          script: "cd drf_firstfarm_backend && docker-compose up"
+          script: "cd drf_firstfarm_backend && docker-compose pull && docker-compose up -d"
