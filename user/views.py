@@ -4,6 +4,7 @@ from django.http import QueryDict
 from django.shortcuts import render
 from django.contrib.auth import login, logout, authenticate
 
+
 from user.jwt_claim_serializer import FirstFarmTokenObtainPairSerializer
 from rest_framework_simplejwt.views import TokenObtainPairView
 
@@ -14,6 +15,7 @@ from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.authentication import JWTAuthentication
 
+from user.jwt_claim_serializer import FirstFarmTokenObtainPairSerializer
 from user.serializers import UserSerializer, UserSiginUpSerializer, UserSiginPutSerializer
 from user.models import (
     User as UserModel,
