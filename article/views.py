@@ -215,8 +215,7 @@ class FarmerMyPageView(APIView):
     # authentication_classes = [JWTAuthentication]
 
     def get(self, request):
-        # user = request.user.id # 로그인 한 유저
-        user = 1
+        user = request.user.id # 로그인 한 유저
         apllies = ApplyModel.objects.filter(user=user, accept=True)  # 로그인 한 유저가 다녀온 공고들을 가져옴 , queryset
         apllies = UserApplySerializer(apllies, many=True).data
 
@@ -224,8 +223,7 @@ class FarmerMyPageView(APIView):
 
     def post(self, request, article_id):
         data = copy.deepcopy(request.data)
-        # data["user"] = request.user.id
-        data["user"] = 2
+        data["user"] = request.user
         data["article"] = article_id
         data["content"] = request.data.get("content", "")  # review 내용
         data["rate"] = request.data.get("rate", "")  # 평점
@@ -237,9 +235,8 @@ class FarmerMyPageView(APIView):
         if review_serializer.is_valid():
             review_serializer.save()
             # 리뷰 작성자 에게는 포인트 3점 추가
-            # farmer = request.user.id
-            # get_rate_rank_point(farmer,3)
-            get_rate_rank_point(1, 3)  # 임의 user1로 테스트
+            farmer = request.user.id
+            get_rate_rank_point(farmer,3)
             # # 리뷰의 평가점수를 농장주에게 추가
             farm = ArticleModel.objects.filter(id=article_id).values("user_id")[0].get("user_id")
             get_rate_rank_point(farm, rate)
@@ -258,8 +255,7 @@ class FarmerMyPageView(APIView):
 
     # 삭제
     def delete(self, request, review_id):
-        # user = request.user.id
-        user = 1
+        user = request.user.id
         review = ReviewModel.objects.get(id=review_id)
         if user == review.user_id:
             review.delete()
@@ -273,8 +269,7 @@ class FarmerReviewView(APIView):
     # authentication_classes = [JWTAuthentication]
 
     def get(self, request):
-        # user = request.user.id # 로그인 한 유저
-        user = 1
+        user = request.user.id # 로그인 한 유저
         reviews = ReviewModel.objects.filter(user=user)  # 로그인 한 유저가 작성한 리뷰들을 가져옴
         serialized_data = ReviewSerializer(reviews, many=True).data  # queryset
         return Response(serialized_data, status=status.HTTP_200_OK)
