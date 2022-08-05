@@ -1,6 +1,8 @@
 from django.db.models import Q
 import copy
+# from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework.views import APIView
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import status
 from user.models import UserProfile as UserProfileModel
@@ -145,19 +147,20 @@ class ArticleDetailView(APIView):
 
                 return Response({"message": "게시글이 수정되었습니다."}, status=status.HTTP_200_OK)
 
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            return Response(article_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def delete(self, request, article_id):
-        # user = request.user
-        user = 1
+        user = request.user.id
         article = ArticleModel.objects.get(id=article_id)
         if user == article.user.id:
             article.display_article = False
             article.save()
-            print(article.display_article)
+            # print(article.display_article)
             return Response({"message": "게시글 마감 성공."}, status=status.HTTP_200_OK)
         else:
             return Response({"message": "게시글 마감 실패."}, status=status.HTTP_400_BAD_REQUEST)
+
+
 
 
 class ArticleApplyView(APIView):
@@ -183,11 +186,10 @@ class FarmMyPageView(APIView):
     # authentication_classes = [JWTAuthentication]
 
     def get(self, request):
-        # user = request.user.id # 로그인 한 유저
-        user = 2
+        user = request.user.id # 로그인 한 유저
+        # user = 2
         articles = ArticleModel.objects.filter(user=user)  # 로그인 한 유저가 올린 공고들을 가져옴
         articles = MyPageSerializer(articles, many=True).data
-        print(articles[0]["img1"])
         return Response(articles, status=status.HTTP_200_OK)  # 로그인 한 유저가 올린 공고들의 serializer 를 넘겨줌
 
     # 삭제 부분은 디테일 페이지에서 구현 되어있어서 우선 지워둠.
@@ -214,20 +216,19 @@ class FarmApplyView(APIView):
 
 # farmer_mypage ~ 신청자가 다녀온 공고 조회, 다녀온 공고의 리뷰 작성, 수정, 삭제
 class FarmerMyPageView(APIView):
-    # authentication_classes = [JWTAuthentication]
-
+    permission_classes = [IsAuthenticated]
     def get(self, request):
-        # user = request.user.id # 로그인 한 유저
-        user = 1
-        apllies = ApplyModel.objects.filter(user=user, accept=True)  # 로그인 한 유저가 다녀온 공고들을 가져옴 , queryset
+        user = request.user # 로그인 한 유저
+        # user = 1
+        apllies = ApplyModel.objects.filter(user=user,accept=True)  # 로그인 한 유저가 다녀온 공고들을 가져옴 , queryset
         apllies = UserApplySerializer(apllies, many=True).data
+        print(apllies)
 
         return Response(apllies, status=status.HTTP_200_OK)  # 로그인 한 유저가 다녀온 공고들의 UserApplyserializer 정보를 넘겨줌
 
     def post(self, request, article_id):
         data = copy.deepcopy(request.data)
-        # data["user"] = request.user.id
-        data["user"] = 2
+        data["user"] = request.user.id
         data["article"] = article_id
         data["content"] = request.data.get("content", "")  # review 내용
         data["rate"] = request.data.get("rate", "")  # 평점
@@ -239,9 +240,9 @@ class FarmerMyPageView(APIView):
         if review_serializer.is_valid():
             review_serializer.save()
             # 리뷰 작성자 에게는 포인트 3점 추가
-            # farmer = request.user.id
-            # get_rate_rank_point(farmer,3)
-            get_rate_rank_point(1, 3)  # 임의 user1로 테스트
+            farmer = request.user.id
+            get_rate_rank_point(farmer,3)
+            # get_rate_rank_point(1, 3)  # 임의 user1로 테스트
             # # 리뷰의 평가점수를 농장주에게 추가
             farm = ArticleModel.objects.filter(id=article_id).values("user_id")[0].get("user_id")
             get_rate_rank_point(farm, rate)
@@ -260,8 +261,8 @@ class FarmerMyPageView(APIView):
 
     # 삭제
     def delete(self, request, review_id):
-        # user = request.user.id
-        user = 1
+        user = request.user.id
+        # user = 1
         review = ReviewModel.objects.get(id=review_id)
         if user == review.user_id:
             review.delete()
@@ -275,8 +276,8 @@ class FarmerReviewView(APIView):
     # authentication_classes = [JWTAuthentication]
 
     def get(self, request):
-        # user = request.user.id # 로그인 한 유저
-        user = 1
+        user = request.user.id # 로그인 한 유저
+        # user = 1
         reviews = ReviewModel.objects.filter(user=user)  # 로그인 한 유저가 작성한 리뷰들을 가져옴
         serialized_data = ReviewSerializer(reviews, many=True).data  # queryset
         return Response(serialized_data, status=status.HTTP_200_OK)
