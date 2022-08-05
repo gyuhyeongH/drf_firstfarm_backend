@@ -10,7 +10,6 @@ from article.models import Review as ReviewModel
 from user.models import User as UserModel
 from user.models import UserProfile as UserProfileModel
 
-
 class ArticleSerializer(serializers.ModelSerializer):
     article_review = serializers.SerializerMethodField()
     phone_number = serializers.SerializerMethodField()
@@ -158,6 +157,8 @@ class UserApplySerializer(serializers.ModelSerializer):
             "age": obj.user.userprofile.age,
             "phone_number": obj.user.userprofile.phone_number,
             "img": obj.user.userprofile.img.url,
+            "points": obj.user.userprofile.points,
+            "introduction": obj.user.userprofile.introduction,
         }
     def get_articleinfo(self, obj):
         return {
