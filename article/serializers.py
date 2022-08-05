@@ -157,9 +157,10 @@ class UserApplySerializer(serializers.ModelSerializer):
             "age": obj.user.userprofile.age,
             "phone_number": obj.user.userprofile.phone_number,
             "img": obj.user.userprofile.img.url,
-            "points": obj.user.userprofile.points,
             "introduction": obj.user.userprofile.introduction,
+            "points": obj.user.userprofile.points,
         }
+
     def get_articleinfo(self, obj):
         return {
             "article_id":obj.article.id,

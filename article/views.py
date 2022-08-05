@@ -216,10 +216,10 @@ class FarmApplyView(APIView):
 # farmer_mypage ~ 신청자가 다녀온 공고 조회, 다녀온 공고의 리뷰 작성, 수정, 삭제
 class FarmerMyPageView(APIView):
     permission_classes = [IsAuthenticated]
+
     def get(self, request):
-        user = request.user # 로그인 한 유저
-        # user = 1
-        apllies = ApplyModel.objects.filter(user=user,accept=True)  # 로그인 한 유저가 다녀온 공고들을 가져옴 , queryset
+        user = request.user.id # 로그인 한 유저
+        apllies = ApplyModel.objects.filter(user=user, accept=True)  # 로그인 한 유저가 다녀온 공고들을 가져옴 , queryset
         apllies = UserApplySerializer(apllies, many=True).data
         print(apllies)
 
@@ -241,7 +241,6 @@ class FarmerMyPageView(APIView):
             # 리뷰 작성자 에게는 포인트 3점 추가
             farmer = request.user.id
             get_rate_rank_point(farmer,3)
-            # get_rate_rank_point(1, 3)  # 임의 user1로 테스트
             # # 리뷰의 평가점수를 농장주에게 추가
             farm = ArticleModel.objects.filter(id=article_id).values("user_id")[0].get("user_id")
             get_rate_rank_point(farm, rate)
@@ -261,7 +260,6 @@ class FarmerMyPageView(APIView):
     # 삭제
     def delete(self, request, review_id):
         user = request.user.id
-        # user = 1
         review = ReviewModel.objects.get(id=review_id)
         if user == review.user_id:
             review.delete()
@@ -276,7 +274,6 @@ class FarmerReviewView(APIView):
 
     def get(self, request):
         user = request.user.id # 로그인 한 유저
-        # user = 1
         reviews = ReviewModel.objects.filter(user=user)  # 로그인 한 유저가 작성한 리뷰들을 가져옴
         serialized_data = ReviewSerializer(reviews, many=True).data  # queryset
         return Response(serialized_data, status=status.HTTP_200_OK)
