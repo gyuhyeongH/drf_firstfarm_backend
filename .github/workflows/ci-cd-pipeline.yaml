@@ -58,7 +58,7 @@ jobs:
           username: ubuntu
           key: ${{ secrets.PRIVATE_KEY }}
           port: 22
-          target: "/home/ubuntu/drf_firstfarm_backend/"
+          target: "/home/ubuntu/"
           source: "docker-compose.yaml"
       - name: executing remote ssh commands using password
         uses: appleboy/ssh-action@master
@@ -67,4 +67,4 @@ jobs:
           username: ubuntu
           key: ${{ secrets.PRIVATE_KEY }}
           port: 22
-          script: "docker-compose up"
+          script: "cd drf_firstfarm_backend && docker-compose up"
