@@ -2,7 +2,7 @@ version: "3.3"
 
 services:
   nginx:
-    build: ./nginx
+    build: drf_firstfarm_backend/nginx
     volumes:
       - static_volume:/usr/src/app/static
       - media_volume:/usr/src/app/media
