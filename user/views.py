@@ -1,12 +1,13 @@
 from ast import literal_eval
-from cmath import polar
-import json
 from django.http import QueryDict
 
 from django.shortcuts import render
 from django.contrib.auth import login, logout, authenticate
 
+
+from user.jwt_claim_serializer import FirstFarmTokenObtainPairSerializer
 from rest_framework_simplejwt.views import TokenObtainPairView
+
 from rest_framework import permissions
 from rest_framework import status
 from rest_framework.views import APIView
@@ -138,7 +139,7 @@ class UserView(APIView):
         # print(json_trans_data)
 
         # username 수정 불가
-        data.pop("username", "")
+        # data.pop("username", "")
         user_serializer = UserSiginPutSerializer(user, data=data.dict(), context={"request" : request})
         # print(user_serializer)
 
@@ -172,6 +173,7 @@ class UserLogoutView(APIView):
             return Response(status=status.HTTP_200_OK)
         except Exception as e:
             return Response(status=status.HTTP_400_BAD_REQUEST)
+
 
 class FirstFarmTokenObtainPairView(TokenObtainPairView):
     serializer_class = FirstFarmTokenObtainPairSerializer

@@ -80,9 +80,9 @@ class ArticleView(APIView):
 
 def recommends(articles, user_prefer):
     recommend_articles = []
-    try:
-        article_info = [article.desc for article in articles]
 
+    article_info = [article.desc for article in articles]
+    try:
         mecab = Mecab()
         tmp_list = [[] for _ in range(len(article_info))]
         stopwords = []
@@ -117,7 +117,6 @@ class ArticleDetailView(APIView):
 
     def get(self, request, article_id):
         article = ArticleModel.objects.get(id=article_id)
-        # authentication_classes = [JWTAuthentication]
 
         serializer = ArticleSerializer(article).data
         return Response(serializer, status=status.HTTP_200_OK)

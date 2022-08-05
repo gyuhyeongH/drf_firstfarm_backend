@@ -1,8 +1,14 @@
 from rest_framework import serializers
 
+import user
+from user.serializers import UserSerializer
+from user.serializers import UserProfileSerializer
+
 from article.models import Article as ArticleModel
 from article.models import Apply as ApplyModel
 from article.models import Review as ReviewModel
+from user.models import User as UserModel
+from user.models import UserProfile as UserProfileModel
 
 class ArticleSerializer(serializers.ModelSerializer):
     article_review = serializers.SerializerMethodField()
@@ -127,7 +133,7 @@ class ArticleApplySerializer(serializers.ModelSerializer):
         fields = ["user", "article", "accept"]
 
     def create(self, validated_data):
-        print(validated_data)
+        # print(validated_data)
         apply = ApplyModel.objects.create(
             user=validated_data['user'],
             article = validated_data['article']
