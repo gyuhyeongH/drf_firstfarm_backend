@@ -123,6 +123,15 @@ class ArticleDetailView(APIView):
 
     def post(self, request):
         data = request.data.copy()
+        if request.data['img1'] == 'undefined' or request.data['img1'] is None:
+            data['img1'] = None
+
+        if request.data['img2'] == 'undefined' or request.data['img2'] is None:
+            data['img2'] = None
+
+        if request.data['img3'] == 'undefined' or request.data['img3'] is None:
+            data['img3'] = None
+
         data['user'] = request.user.id
         serializer = ArticleSerializer(data=data)
 
@@ -154,7 +163,6 @@ class ArticleDetailView(APIView):
         if user == article.user.id:
             article.display_article = False
             article.save()
-            # print(article.display_article)
             return Response({"message": "게시글 마감 성공."}, status=status.HTTP_200_OK)
         else:
             return Response({"message": "게시글 마감 실패."}, status=status.HTTP_400_BAD_REQUEST)
@@ -169,15 +177,24 @@ class ArticleApplyView(APIView):
         data = {"article": article.id, "user": request.user.id}
         serializer = ArticleApplySerializer(data=data, partial=True)
 
-
         if serializer.is_valid():
-            get_rate_rank_point(request.user, 3)  # 테스트 용 user_id 1 임의로 전달
+            get_rate_rank_point(request.user, 3)
             serializer.save()
 
             return Response({"message": "신청이 완료되었습니다."}, status=status.HTTP_200_OK)
         else:
-
             return Response({"message": f'${serializer.errors}'}, status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request, article_id):
+        user = request.user.id
+        apply = ApplyModel.objects.get(article_id=article_id)
+
+        if apply:
+            if user == apply.user_id:
+                apply.delete()
+                return Response({"message": "신청 취소 완료."}, status=status.HTTP_200_OK)
+            else:
+                return Response({"message": "신청 취소 실패."}, status=status.HTTP_400_BAD_REQUEST)
 
 
 # farm_mypage ~ 자신이 올린 공고 조회

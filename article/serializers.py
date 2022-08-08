@@ -14,6 +14,13 @@ class ArticleSerializer(serializers.ModelSerializer):
     article_review = serializers.SerializerMethodField()
     phone_number = serializers.SerializerMethodField()
     rank = serializers.SerializerMethodField()
+    apply = serializers.SerializerMethodField()
+
+    def get_apply(self, obj):
+        apply_user_data = []
+        for apply in obj.apply_set.all():
+            apply_user_data.append(apply.user.username)
+        return {"apply": apply_user_data}
 
     def get_rank(self, obj):
         rank_data = []
@@ -31,17 +38,18 @@ class ArticleSerializer(serializers.ModelSerializer):
         review_rate_data = []
         review_content_data = []
         review_user_data = []
-        # review_img1_data = []
+        review_img_data = []
         # print(obj.review_set.all())
         for reviews in obj.review_set.all():
             review_rate_data.append(reviews.rate)
             review_content_data.append(reviews.content)
             review_user_data.append(reviews.user.username)
-            # review_img1_data.append(reviews.img1.url)
-            # print(review_img1_data)
-            # print(reviews.user.username)
+            review_img_data.append(reviews.img1.url)
+            review_img_data.append(reviews.img2.url)
+            review_img_data.append(reviews.img3.url)
+            # print(review_img_data)
             # print({"rate" : review_rate_data, "content":review_content_data, "user":review_user_data})
-        return {"rate" : review_rate_data, "content":review_content_data, "review_user":review_user_data}
+        return {"rate" : review_rate_data, "content":review_content_data, "review_user":review_user_data, "review_img":review_img_data}
 
 
 
@@ -50,7 +58,7 @@ class ArticleSerializer(serializers.ModelSerializer):
         fields = [
             "id", "user", "article_category", "farm_name", "location", "title", "cost", "requirement", "period", "img1",
             "img2", "img3",
-            "desc", "display_article", "exposure_end_date", "created_at", "updated_at", "article_review", "phone_number", "rank"
+            "desc", "display_article", "exposure_end_date", "created_at", "updated_at", "article_review", "phone_number", "rank", "apply"
         ]
 
     farm_name = serializers.CharField(required=True, min_length=2)
@@ -112,22 +120,6 @@ class MyPageSerializer(serializers.ModelSerializer):
 
 class ArticleApplySerializer(serializers.ModelSerializer):
 
-
-    def get_userinfo(self, obj):
-        return {
-            "email": obj.user.email,
-            "rank" :obj.user.userprofile.rank.rank_name,
-            "birthday":obj.user.userprofile.birthday,
-            "fullname": obj.user.userprofile.fullname,
-            "location": obj.user.userprofile.location,
-            "prefer": obj.user.userprofile.prefer,
-            "gender": obj.user.userprofile.gender,
-            "introduction": obj.user.userprofile.introduction,
-            "phone_number": obj.user.userprofile.phone_number,
-            "points":obj.user.userprofile.points,
-            # "profile_img": obj.user.userprofile.img
-        }
-
     class Meta:
         model = ApplyModel
         fields = ["user", "article", "accept"]
@@ -137,7 +129,6 @@ class ArticleApplySerializer(serializers.ModelSerializer):
         apply = ApplyModel.objects.create(
             user=validated_data['user'],
             article = validated_data['article']
-
         )
         return apply
 
