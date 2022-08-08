@@ -10,6 +10,13 @@ from article.models import Review as ReviewModel
 from user.models import User as UserModel
 from user.models import UserProfile as UserProfileModel
 
+
+class ArticleGetSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ArticleModel
+        fields = "__all__"
+
+
 class ArticleSerializer(serializers.ModelSerializer):
     article_review = serializers.SerializerMethodField()
     phone_number = serializers.SerializerMethodField()
