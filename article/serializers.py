@@ -1,8 +1,14 @@
 from rest_framework import serializers
 
+import user
+from user.serializers import UserSerializer
+from user.serializers import UserProfileSerializer
+
 from article.models import Article as ArticleModel
 from article.models import Apply as ApplyModel
 from article.models import Review as ReviewModel
+from user.models import User as UserModel
+from user.models import UserProfile as UserProfileModel
 
 class ArticleSerializer(serializers.ModelSerializer):
     article_review = serializers.SerializerMethodField()
@@ -150,8 +156,7 @@ class UserApplySerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ApplyModel
-
-        fields = ["user","article","accept","articleinfo","userinfo"]
+        fields = ["id","user","article","accept","articleinfo","userinfo"]
 
 
 

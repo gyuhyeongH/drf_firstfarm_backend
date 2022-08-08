@@ -227,6 +227,13 @@ class FarmerMyPageView(APIView):
 
         return Response(apllies, status=status.HTTP_200_OK)  # 로그인 한 유저가 다녀온 공고들의 UserApplyserializer 정보를 넘겨줌
 
+    # def get(self,request,article_id):
+    #     user = request.user
+    #     review = ReviewModel.objects.filter(article_id=article_id,user=user)
+    #     review = ReviewSerializer(review,many=True).data
+    #
+    #     return Response(review,status=status.HTTP_200_OK)
+
     def post(self, request, article_id):
         data = copy.deepcopy(request.data)
         data["user"] = request.user.id
@@ -249,7 +256,6 @@ class FarmerMyPageView(APIView):
             farmer = request.user
             get_rate_rank_point(farmer, 3)
             farm = ArticleModel.objects.filter(id=article_id).values("user_id")[0].get("user_id")
-            print(farm)
             farm = UserModel.objects.get(id=farm)
             get_rate_rank_point(farm, rate)
             return Response({"result": "리뷰 작성 완료!"}, status=status.HTTP_200_OK)
@@ -260,6 +266,15 @@ class FarmerMyPageView(APIView):
     def put(self, request, review_id):
         review = ReviewModel.objects.get(id=review_id)
         review_serializer = ReviewSerializer(review, data=request.data, partial=True)
+        print(review_serializer)
+        # if request.data['img1'] == 'undefined' or request.data['img1'] is None:
+        #     data['img1'] = None
+        #
+        # if request.data['img2'] == 'undefined' or request.data['img2'] is None:
+        #     data['img2'] = None
+        #
+        # if request.data['img3'] == 'undefined' or request.data['img3'] is None:
+        #     data['img3'] = None
         if review_serializer.is_valid():
             review_serializer.save()
             return Response(review_serializer.data, status=status.HTTP_200_OK)
