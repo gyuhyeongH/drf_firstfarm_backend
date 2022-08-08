@@ -98,7 +98,7 @@ def recommends(articles, user_prefer):
 
         documents = [TaggedDocument(doc, [i]) for i, doc in enumerate(tmp_list)]
 
-        model = Doc2Vec(documents, vector_size=10, window=1, epochs=1000, min_count=0, workers=4)
+        model = Doc2Vec(documents, vector_size=10, window=1, epochs=100, min_count=0, workers=4)
 
         prefer = mecab.nouns(user_prefer)
 
@@ -244,7 +244,7 @@ class FarmerMyPageView(APIView):
 
     def post(self, request, article_id):
         data = copy.deepcopy(request.data)
-        data["user"] = request.user.id
+        data["user"] = request.user
         data["article"] = article_id
         data["content"] = request.data.get("content", "")  # review 내용
         data["rate"] = request.data.get("rate", "")  # 평점
