@@ -122,7 +122,6 @@ class ArticleDetailView(APIView):
         return Response(serializer, status=status.HTTP_200_OK)
 
     def post(self, request):
-        # print(request.data)
         data = request.data.copy()
         if request.data['img1'] == 'undefined' or request.data['img1'] is None:
             data['img1'] = None
@@ -164,7 +163,6 @@ class ArticleDetailView(APIView):
         if user == article.user.id:
             article.display_article = False
             article.save()
-            # print(article.display_article)
             return Response({"message": "게시글 마감 성공."}, status=status.HTTP_200_OK)
         else:
             return Response({"message": "게시글 마감 실패."}, status=status.HTTP_400_BAD_REQUEST)
