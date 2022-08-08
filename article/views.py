@@ -114,7 +114,7 @@ def recommends(articles, user_prefer):
 
 class ArticleSearchView(APIView):
     def get(self, request):
-        search_text = request.GET.get('search_text', '')
+        search_text = request.headers.get('choice')
         articles = ArticleModel.objects.filter(Q(title__icontains=search_text) | Q(desc__icontains=search_text) | Q(display_article=True))
         articles_serializer = ArticleSerializer(articles, many=True).data
 
