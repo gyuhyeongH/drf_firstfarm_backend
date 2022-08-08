@@ -11,7 +11,7 @@ from .models import Apply as ApplyModel
 from .models import Review as ReviewModel
 from article.serializers import ArticleSerializer
 
-from article.serializers import ArticleApplySerializer, UserApplySerializer, MyPageSerializer
+from article.serializers import ArticleApplySerializer, UserApplySerializer, MyPageSerializer,ArticleGetSerializer
 from article.serializers import ReviewSerializer
 
 try:
@@ -113,11 +113,11 @@ def recommends(articles, user_prefer):
 
 
 class ArticleSearchView(APIView):
-
     def get(self, request):
-        search_text = request.headers.get('choice')
-        articles = ArticleModel.objects.filter(Q(title__icontains=search_text) | Q(desc__icontains=search_text) | Q(display_article=True))
-        articles_serializer = ArticleSerializer(articles, many=True).data
+        search_text = request.data.get("search_text","")
+        articles = ArticleModel.objects.filter((Q(title__icontains=search_text) | Q(desc__icontains=search_text)) & Q(display_article=True))
+
+        articles_serializer = ArticleGetSerializer(articles, many=True).data
 
         return Response(articles_serializer, status=status.HTTP_200_OK)
 
