@@ -116,9 +116,16 @@ def recommends(articles, user_prefer):
 class ArticleDetailView(APIView):
 
     def get(self, request, article_id):
+        apply_view = False
+        if request.user:
+            if ApplyModel.objects.filter(Q(user=request.user.id) & Q(article=article_id)) :
+                apply_view = True
+
         article = ArticleModel.objects.get(id=article_id)
 
         serializer = ArticleSerializer(article).data
+        serializer['apply'] = apply_view
+        print(serializer)
         return Response(serializer, status=status.HTTP_200_OK)
 
     def post(self, request):
@@ -174,6 +181,7 @@ class ArticleApplyView(APIView):
 
     def post(self, request, article_id):
         article = ArticleModel.objects.get(id=article_id)
+        # print(article)
         data = {"article": article.id, "user": request.user.id}
         serializer = ArticleApplySerializer(data=data, partial=True)
 
@@ -187,7 +195,7 @@ class ArticleApplyView(APIView):
 
     def delete(self, request, article_id):
         user = request.user.id
-        apply = ApplyModel.objects.get(article_id=article_id)
+        apply = ApplyModel.objects.get(Q(user=request.user.id) & Q(article=article_id))
 
         if apply:
             if user == apply.user_id:
