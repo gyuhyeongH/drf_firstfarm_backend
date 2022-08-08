@@ -4,6 +4,13 @@ from article.models import Article as ArticleModel
 from article.models import Apply as ApplyModel
 from article.models import Review as ReviewModel
 
+
+class ArticleGetSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ArticleModel
+        fields = "__all__"
+
+
 class ArticleSerializer(serializers.ModelSerializer):
     article_review = serializers.SerializerMethodField()
     phone_number = serializers.SerializerMethodField()

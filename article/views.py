@@ -11,7 +11,7 @@ from .models import Apply as ApplyModel
 from .models import Review as ReviewModel
 from article.serializers import ArticleSerializer
 
-from article.serializers import ArticleApplySerializer, UserApplySerializer, MyPageSerializer
+from article.serializers import ArticleApplySerializer, UserApplySerializer, MyPageSerializer,ArticleGetSerializer
 from article.serializers import ReviewSerializer
 
 try:
@@ -98,7 +98,7 @@ def recommends(articles, user_prefer):
 
         documents = [TaggedDocument(doc, [i]) for i, doc in enumerate(tmp_list)]
 
-        model = Doc2Vec(documents, vector_size=10, window=1, epochs=100, min_count=0, workers=4)
+        model = Doc2Vec(documents, vector_size=10, window=1, epochs=10, min_count=0, workers=4)
 
         prefer = mecab.nouns(user_prefer)
 
@@ -110,6 +110,17 @@ def recommends(articles, user_prefer):
     except:
         pass
     return recommend_articles
+
+
+class ArticleSearchView(APIView):
+    def get(self, request):
+        search_text = request.GET.get("search_text","")
+        print(search_text)
+        articles = ArticleModel.objects.filter((Q(title__icontains=search_text) | Q(desc__icontains=search_text)) & Q(display_article=True))
+
+        articles_serializer = ArticleGetSerializer(articles, many=True).data
+
+        return Response(articles_serializer, status=status.HTTP_200_OK)
 
 
 # Create your views here.
