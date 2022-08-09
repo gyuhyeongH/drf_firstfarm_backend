@@ -256,12 +256,26 @@ class AcceptApplyView(APIView):
 # farmer_mypage ~ 신청자가 다녀온 공고 조회, 다녀온 공고의 리뷰 작성, 수정, 삭제
 class FarmerMyPageView(APIView):
     permission_classes = [IsAuthenticated]
-
     def get(self, request):
-        user = request.user  # 로그인 한 유저
-        apllies = ApplyModel.objects.filter(user=user, accept=True)  # 로그인 한 유저가 다녀온 공고들을 가져옴 , queryset
-        apllies = UserApplySerializer(apllies, many=True).data
-
+        user = request.user # 로그인 한 유저
+        if(ApplyModel.objects.filter(user=user,accept=True)):
+            apllies = ApplyModel.objects.filter(user=user, accept=True)
+            apllies = UserApplySerializer(apllies, many=True).data
+        else:
+            apllies = {
+                "email":user.email,
+                "rank": user.userprofile.rank.rank_name,
+                "birthday": user.userprofile.birthday,
+                "fullname": user.userprofile.fullname,
+                "location": user.userprofile.location,
+                "prefer": user.userprofile.prefer,
+                "gender": user.userprofile.gender,
+                "introduction": user.userprofile.introduction,
+                "phone_number": user.userprofile.phone_number,
+                "points": user.userprofile.points,
+                "profile_img": user.userprofile.img.url,
+            }
+            print(apllies)
         return Response(apllies, status=status.HTTP_200_OK)  # 로그인 한 유저가 다녀온 공고들의 UserApplyserializer 정보를 넘겨줌
 
     # def get(self,request,article_id):
@@ -272,8 +286,9 @@ class FarmerMyPageView(APIView):
     #     return Response(review,status=status.HTTP_200_OK)
 
     def post(self, request, article_id):
+        print(article_id)
         data = copy.deepcopy(request.data)
-        data["user"] = request.user
+        data["user"] = request.user.id
         data["article"] = article_id
         data["content"] = request.data.get("content", "")  # review 내용
         data["rate"] = request.data.get("rate", "")  # 평점
@@ -291,7 +306,7 @@ class FarmerMyPageView(APIView):
         if review_serializer.is_valid():
             review_serializer.save()
             farmer = request.user
-            get_rate_rank_point(farmer, 3)
+            get_rate_rank_point(farmer,3)
             farm = ArticleModel.objects.filter(id=article_id).values("user_id")[0].get("user_id")
             farm = UserModel.objects.get(id=farm)
             get_rate_rank_point(farm, rate)
