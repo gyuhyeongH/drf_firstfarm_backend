@@ -80,7 +80,7 @@ class UserProfile(models.Model):
     rank = models.ForeignKey(Rank, verbose_name="랭크", on_delete=models.SET_NULL, null=True)
 
     fullname = models.CharField(verbose_name="이름", max_length=128)
-    location = models.CharField(verbose_name="지역", max_length=128)
+    location = models.CharField(verbose_name="지역", max_length=128,blank=True)
 
     GENDERS = (
         ('M', '남성(Man)'),
