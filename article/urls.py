@@ -14,10 +14,10 @@ urlpatterns = [
     # user_category가 farm 인 경우의 mypage
     path('farm/', views.FarmMyPageView.as_view(), name='farm_page'),
     path('farm/<article_id>', views.FarmApplyView.as_view(), name='farm_apply_page'),
-
+    path('farm/<article_id>/<apply_id>',views.AcceptApplyView.as_view(),name = 'accept_apply'),
     # user_category가 farmer 인 경우의 mypage ( naming 다시 )
     path('farmer/', views.FarmerMyPageView.as_view(), name='farmer_page'),
-    path('<article_id>/farmer', views.FarmerMyPageView.as_view(), name='farmer_page'),
-    path('farmer/<review_id>', views.FarmerMyPageView.as_view(), name='farmer_page'),
+    path('<int:article_id>/farmer', views.FarmerMyPageView.as_view(), name='farmer_page'),
+    path('farmer/<int:review_id>', views.FarmerMyPageView.as_view(), name='farmer_review'),
     path('review/', views.FarmerReviewView.as_view(), name='farmer_review_page'),
 ]
