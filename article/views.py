@@ -57,7 +57,7 @@ class ArticleView(APIView):
         if request_article_category == '':
             articles = ArticleModel.objects.filter(
                 Q(location__contains=request_location_choice) & Q(display_article=True))
-            articles_serializer = ArticleSerializer(articles, many=True).data
+            articles_serializer = ArticleGetSerializer(articles, many=True).data
 
             return Response(articles_serializer, status=status.HTTP_200_OK)
 
@@ -65,7 +65,7 @@ class ArticleView(APIView):
             if request.user:
                 articles = ArticleModel.objects.filter(display_article=True)
                 recommend_articles = recommends(articles, request.user.userprofile.prefer)  # 추천 시스템 함수
-                recommend_articles_serializer = ArticleSerializer(recommend_articles, many=True).data
+                recommend_articles_serializer = ArticleGetSerializer(recommend_articles, many=True).data
 
                 return Response(recommend_articles_serializer, status=status.HTTP_200_OK)
             else:
@@ -76,8 +76,7 @@ class ArticleView(APIView):
             articles = ArticleModel.objects.filter(
                 Q(article_category=request_article_category) & Q(location__contains=request_location_choice) & Q(
                     display_article=True))
-            articles_serializer = ArticleSerializer(articles, many=True).data
-
+            articles_serializer = ArticleGetSerializer(articles, many=True).data
             return Response(articles_serializer, status=status.HTTP_200_OK)
 
 

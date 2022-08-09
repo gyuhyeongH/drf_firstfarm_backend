@@ -154,7 +154,6 @@ class UserApplySerializer(serializers.ModelSerializer):
         fields = ["id","user","article","accept","articleinfo","userinfo"]
 
 
-
 # ReviewSerializer
 class ReviewSerializer(serializers.ModelSerializer):
     articleinfo = serializers.SerializerMethodField(read_only=True)
