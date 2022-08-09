@@ -101,7 +101,7 @@ class MyPageSerializer(serializers.ModelSerializer):
         model = ArticleModel
         fields = [
             "id","user","article_category","farm_name","location","title","cost","requirement","period","img1","img2","img3",
-            "desc","display_article","exposure_end_date","created_at","updated_at","userinfo"
+            "desc","exposure_end_date","created_at","updated_at","userinfo"
         ]
 
 
@@ -131,13 +131,12 @@ class UserApplySerializer(serializers.ModelSerializer):
             "prefer": obj.user.userprofile.prefer,
             "gender": obj.user.userprofile.gender,
             "rank": obj.user.userprofile.rank.rank_name,
-            "age": obj.user.userprofile.age,
+            "birthday": obj.user.userprofile.birthday,
             "phone_number": obj.user.userprofile.phone_number,
             "img": obj.user.userprofile.img.url,
-            "introduction": obj.user.userprofile.introduction,
             "points": obj.user.userprofile.points,
+            "introduction": obj.user.userprofile.introduction,
         }
-
     def get_articleinfo(self, obj):
         return {
             "article_id":obj.article.id,
@@ -147,13 +146,12 @@ class UserApplySerializer(serializers.ModelSerializer):
             "period": obj.article.period,
             "cost": obj.article.cost,
             "desc": obj.article.desc,
+            "img1":obj.article.img1.url,
         }
 
     class Meta:
         model = ApplyModel
-
-        fields = ["user","article","accept","articleinfo","userinfo"]
-
+        fields = ["id","user","article","accept","articleinfo","userinfo"]
 
 
 # ReviewSerializer
@@ -167,3 +165,8 @@ class ReviewSerializer(serializers.ModelSerializer):
     class Meta:
         model = ReviewModel
         fields = ["id","user","article","rate","img1","img2","img3","content","created_at","updated_at","articleinfo"]
+
+class ApplySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ApplyModel
+        fields = "__all__"
