@@ -1,14 +1,15 @@
 from rest_framework import serializers
 
-import user
-from user.serializers import UserSerializer
-from user.serializers import UserProfileSerializer
-
 from article.models import Article as ArticleModel
 from article.models import Apply as ApplyModel
 from article.models import Review as ReviewModel
-from user.models import User as UserModel
-from user.models import UserProfile as UserProfileModel
+
+
+class ArticleGetSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ArticleModel
+        fields = "__all__"
+
 
 class ArticleSerializer(serializers.ModelSerializer):
     article_review = serializers.SerializerMethodField()
@@ -31,17 +32,15 @@ class ArticleSerializer(serializers.ModelSerializer):
         review_rate_data = []
         review_content_data = []
         review_user_data = []
-        # review_img1_data = []
-        # print(obj.review_set.all())
+        review_img_data = []
         for reviews in obj.review_set.all():
             review_rate_data.append(reviews.rate)
             review_content_data.append(reviews.content)
             review_user_data.append(reviews.user.username)
-            # review_img1_data.append(reviews.img1.url)
-            # print(review_img1_data)
-            # print(reviews.user.username)
-            # print({"rate" : review_rate_data, "content":review_content_data, "user":review_user_data})
-        return {"rate" : review_rate_data, "content":review_content_data, "review_user":review_user_data}
+            review_img_data.append(reviews.img1.url)
+            review_img_data.append(reviews.img2.url)
+            review_img_data.append(reviews.img3.url)
+        return {"rate" : review_rate_data, "content":review_content_data, "review_user":review_user_data, "review_img":review_img_data}
 
 
 
@@ -50,7 +49,7 @@ class ArticleSerializer(serializers.ModelSerializer):
         fields = [
             "id", "user", "article_category", "farm_name", "location", "title", "cost", "requirement", "period", "img1",
             "img2", "img3",
-            "desc", "display_article", "exposure_end_date", "created_at", "updated_at", "article_review", "phone_number", "rank"
+            "desc", "display_article", "exposure_end_date", "created_at", "updated_at", "article_review", "phone_number", "rank",
         ]
 
     farm_name = serializers.CharField(required=True, min_length=2)
@@ -58,7 +57,6 @@ class ArticleSerializer(serializers.ModelSerializer):
     display_article = serializers.BooleanField(default=True)
 
     def create(self, validated_data):
-        print(validated_data)
         article = ArticleModel.objects.create(
             user=validated_data['user'],
             article_category=validated_data['article_category'],
@@ -72,14 +70,11 @@ class ArticleSerializer(serializers.ModelSerializer):
             img1=validated_data['img1'],
             img2=validated_data['img2'],
             img3=validated_data['img3'],
-            # exposure_end_date=validated_data['exposure_end_date'],
             display_article=True,
         )
-        # print(article)
         return article
     def update(self, instance, validated_data):
         for key, value in validated_data.items():
-            # print(key, value)
             setattr(instance, key, value)
         instance.save()
         return instance
@@ -106,38 +101,20 @@ class MyPageSerializer(serializers.ModelSerializer):
         model = ArticleModel
         fields = [
             "id","user","article_category","farm_name","location","title","cost","requirement","period","img1","img2","img3",
-            "desc","display_article","exposure_end_date","created_at","updated_at","userinfo"
+            "desc","exposure_end_date","created_at","updated_at","userinfo"
         ]
 
 
 class ArticleApplySerializer(serializers.ModelSerializer):
-
-
-    def get_userinfo(self, obj):
-        return {
-            "email": obj.user.email,
-            "rank" :obj.user.userprofile.rank.rank_name,
-            "birthday":obj.user.userprofile.birthday,
-            "fullname": obj.user.userprofile.fullname,
-            "location": obj.user.userprofile.location,
-            "prefer": obj.user.userprofile.prefer,
-            "gender": obj.user.userprofile.gender,
-            "introduction": obj.user.userprofile.introduction,
-            "phone_number": obj.user.userprofile.phone_number,
-            "points":obj.user.userprofile.points,
-            # "profile_img": obj.user.userprofile.img
-        }
 
     class Meta:
         model = ApplyModel
         fields = ["user", "article", "accept"]
 
     def create(self, validated_data):
-        # print(validated_data)
         apply = ApplyModel.objects.create(
             user=validated_data['user'],
             article = validated_data['article']
-
         )
         return apply
 
@@ -154,13 +131,12 @@ class UserApplySerializer(serializers.ModelSerializer):
             "prefer": obj.user.userprofile.prefer,
             "gender": obj.user.userprofile.gender,
             "rank": obj.user.userprofile.rank.rank_name,
-            "age": obj.user.userprofile.age,
+            "birthday": obj.user.userprofile.birthday,
             "phone_number": obj.user.userprofile.phone_number,
             "img": obj.user.userprofile.img.url,
-            "introduction": obj.user.userprofile.introduction,
             "points": obj.user.userprofile.points,
+            "introduction": obj.user.userprofile.introduction,
         }
-
     def get_articleinfo(self, obj):
         return {
             "article_id":obj.article.id,
@@ -170,13 +146,12 @@ class UserApplySerializer(serializers.ModelSerializer):
             "period": obj.article.period,
             "cost": obj.article.cost,
             "desc": obj.article.desc,
+            "img1":obj.article.img1.url,
         }
 
     class Meta:
         model = ApplyModel
-
-        fields = ["user","article","accept","articleinfo","userinfo"]
-
+        fields = ["id","user","article","accept","articleinfo","userinfo"]
 
 
 # ReviewSerializer
@@ -190,3 +165,8 @@ class ReviewSerializer(serializers.ModelSerializer):
     class Meta:
         model = ReviewModel
         fields = ["id","user","article","rate","img1","img2","img3","content","created_at","updated_at","articleinfo"]
+
+class ApplySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ApplyModel
+        fields = "__all__"
