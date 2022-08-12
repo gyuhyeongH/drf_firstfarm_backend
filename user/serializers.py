@@ -1,7 +1,7 @@
 import json
 from rest_framework import serializers
 from rest_framework.validators import UniqueValidator
-
+import json
 from collections import OrderedDict
 
 from user.models import (
@@ -52,6 +52,30 @@ class UserSerializer(serializers.ModelSerializer):
             # 쓰기 전용으로 설정 된 필드는 직렬화 된 데이터에서 보여지지 않는다.
             'password': {'write_only': True},  # default : False
         }
+    def update(self, instance, validated_data):
+        print(validated_data)
+        print(instance.userprofile.items)
+        for key,value in instance.userprofile.items():
+            setattr(instance.userprofile,key,value)
+        instance.userprofile.save()
+
+        for key, value in validated_data.items():
+            setattr(instance, key, value)
+
+        instance.save()
+
+
+        return instance
+
+        # # 프로필 정보 수정
+        # user_profile_object = instance.userprofile
+
+        # for key, value in user_profile_object.items():
+        #     setattr(user_profile_object, key, value)
+
+        # user_profile_object.save()
+        #
+        # return instance
 
 
 class UserSiginUpSerializer(serializers.ModelSerializer):
@@ -107,45 +131,3 @@ class UserSiginUpSerializer(serializers.ModelSerializer):
             )
             user.save()
             return user
-
-
-class UserSiginPutSerializer(serializers.ModelSerializer):
-    userprofile = UserProfilePutSerializer()
-
-    class Meta:
-        model = UserModel
-        fields = ["username", "email", "userprofile"]
-
-        extra_kwargs = {
-            # write_only : 해당 필드를 쓰기 전용으로 만들어 준다.
-            # 쓰기 전용으로 설정 된 필드는 직렬화 된 데이터에서 보여지지 않는다.
-            "username": {
-                'required': False,
-            }
-        }
-
-    def update(self, instance, validated_data):
-        print("6번")
-        print(instance)
-        print("7번")
-        print(validated_data)
-
-        user_profile = validated_data.pop("userprofile")
-        print("8번")
-        print(user_profile)
-
-        # instance에는 입력된 object가 담긴다.
-        # 유저 필수 정보 수정
-        for key, value in validated_data.items():
-            setattr(instance, key, value)
-
-        instance.save()
-
-        # 프로필 정보 수정
-        user_profile_object = instance.userprofile
-        for key, value in user_profile.items():
-            setattr(user_profile_object, key, value)
-
-        user_profile_object.save()
-
-        return instance
