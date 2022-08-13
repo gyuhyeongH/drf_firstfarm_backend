@@ -105,7 +105,7 @@ def recommends(articles, user_prefer):
         prefer = mecab.nouns(user_prefer)
 
         inferred_doc_vec = model.infer_vector(prefer)
-        most_similar_docs = model.docvecs.most_similar([inferred_doc_vec], topn=10)
+        most_similar_docs = model.docvecs.most_similar([inferred_doc_vec], topn=9)
 
         for index, similarity in most_similar_docs:
             recommend_articles.append(articles[index])
