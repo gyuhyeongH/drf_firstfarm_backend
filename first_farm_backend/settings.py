@@ -176,6 +176,7 @@ CORS_ALLOWED_ORIGINS = [
     "http://localhost:5500",
     "https://rbgud.shop",
     "https://hwisu.shop",
+
 ]
 
 CORS_ALLOW_METHODS = [

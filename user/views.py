@@ -56,7 +56,7 @@ class UserView(APIView):
         for i in data:
             if data[i] == "":
                 return Response("회원정보가 없습니다.", status=status.HTTP_400_BAD_REQUEST)
-                
+
         profile_data = data.pop('userprofile')[0]
         print("2번")
         print(profile_data)
@@ -84,7 +84,7 @@ class UserView(APIView):
         print("6번")
         print(data)
 
-        serializer = UserSiginUpSerializer(data=data.dict(), context={"request" : request})
+        serializer = UserSiginUpSerializer(data=data.dict(), context={"request": request})
         print("7번")
         print(serializer)
 

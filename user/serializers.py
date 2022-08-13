@@ -100,7 +100,7 @@ class UserSiginUpSerializer(serializers.ModelSerializer):
         user_profile = validated_data.pop("userprofile")
         if user_profile:
             # 첫 회원가입시 id = 1 : name = 씨앗 default
-            user_profile = UserProfileModel.objects.create(
+            UserProfileModel.objects.create(
                 user=user,
                 rank_id=1,
                 **user_profile,
