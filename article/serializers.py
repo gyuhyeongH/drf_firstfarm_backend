@@ -122,6 +122,7 @@ class ArticleApplySerializer(serializers.ModelSerializer):
 class UserApplySerializer(serializers.ModelSerializer):
     articleinfo = serializers.SerializerMethodField(read_only=True)
     userinfo = serializers.SerializerMethodField(read_only=True)
+    reviewinfo = serializers.SerializerMethodField(read_only=True)
 
     def get_userinfo(self, obj):
         return {
@@ -133,7 +134,7 @@ class UserApplySerializer(serializers.ModelSerializer):
             "rank": obj.user.userprofile.rank.rank_name,
             "birthday": obj.user.userprofile.birthday,
             "phone_number": obj.user.userprofile.phone_number,
-            "img": obj.user.userprofile.img.url,
+            "profile_img": obj.user.userprofile.img.url,
             "points": obj.user.userprofile.points,
             "introduction": obj.user.userprofile.introduction,
         }
@@ -148,10 +149,21 @@ class UserApplySerializer(serializers.ModelSerializer):
             "desc": obj.article.desc,
             "img1":obj.article.img1.url,
         }
+    def get_reviewinfo(self,obj):
+        temp = obj.user.review_set.all() #내가 쓴 리뷰
+        temp_array = [] # 내가 쓴 리뷰의 article
+
+        for i in range(0, len(temp)):
+            temp_array.append(temp[i].article)
+
+        if(temp_array.count(obj.article) > 0 ):
+            return False
+        else:
+            return True
 
     class Meta:
         model = ApplyModel
-        fields = ["id","user","article","accept","articleinfo","userinfo"]
+        fields = ["id","user","article","accept","articleinfo","userinfo","reviewinfo"]
 
 
 # ReviewSerializer
@@ -162,6 +174,13 @@ class ReviewSerializer(serializers.ModelSerializer):
             "title":obj.article.title,
             "period": obj.article.period,
         }
+
+    def update(self, instance, validated_data):
+        for key, value in validated_data.items():
+            setattr(instance, key, value)
+        instance.save()
+        return instance
+
     class Meta:
         model = ReviewModel
         fields = ["id","user","article","rate","img1","img2","img3","content","created_at","updated_at","articleinfo"]
