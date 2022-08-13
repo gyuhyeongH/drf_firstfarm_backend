@@ -220,14 +220,16 @@ class ArticleApplyView(APIView):
 # farm_mypage ~ 자신이 올린 공고 조회
 class FarmMyPageView(APIView):
     # authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        user = request.user.id  # 로그인 한 유저
-        # user = 2
-        if (ArticleModel.objects.filter(user=user)):
-            articles = ArticleModel.objects.filter(user=user)  # 로그인 한 유저가 올린 공고들을 가져옴
+        user = request.user  # 로그인 한 유저
+
+        if (len(ArticleModel.objects.filter(user_id=user.id)) > 0):
+            articles = ArticleModel.objects.filter(user=user.id)  # 로그인 한 유저가 올린 공고들을 가져옴
             articles = MyPageSerializer(articles, many=True).data
         else:
+            print("hello")
             articles = {
                 "user":user,
                 "email": user.email,
@@ -242,6 +244,7 @@ class FarmMyPageView(APIView):
                 "points": user.userprofile.points,
                 "profile_img": user.userprofile.img.url,
             }
+        print(articles)
         return Response(articles, status=status.HTTP_200_OK)  # 로그인 한 유저가 올린 공고들의 serializer 를 넘겨줌
 
 
