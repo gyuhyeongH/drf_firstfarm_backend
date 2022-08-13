@@ -229,9 +229,8 @@ class FarmMyPageView(APIView):
             articles = ArticleModel.objects.filter(user=user.id)  # 로그인 한 유저가 올린 공고들을 가져옴
             articles = MyPageSerializer(articles, many=True).data
         else:
-            print("hello")
             articles = {
-                "user":user,
+                "user":user.id,
                 "email": user.email,
                 "rank": user.userprofile.rank.rank_name,
                 "birthday": user.userprofile.birthday,
@@ -244,7 +243,6 @@ class FarmMyPageView(APIView):
                 "points": user.userprofile.points,
                 "profile_img": user.userprofile.img.url,
             }
-        print(articles)
         return Response(articles, status=status.HTTP_200_OK)  # 로그인 한 유저가 올린 공고들의 serializer 를 넘겨줌
 
 
