@@ -67,20 +67,20 @@ class ArticleTest(APITestCase):
         )
         self.assertEqual(response.status_code, 200)
 
-    # def test_create_article_with_image(self):
-    #     temp_file = tempfile.NamedTemporaryFile()
-    #     temp_file.name = "image.png"
-    #     image_file = get_temporary_image(temp_file)
-    #     image_file.seek(0)
-    #     self.article_data["img1"] = image_file
-    #
-    #     response = self.client.post(
-    #         path=reverse('article_create_view'),
-    #         data=encode_multipart(data=self.article_data, boundary=BOUNDARY),
-    #         content_type=MULTIPART_CONTENT,
-    #         HTTP_AUTHORIZATION=f"Bearer {self.access_token}"
-    #     )
-    #     self.assertEqual(response.status_code, 200)
+    def test_create_article_with_image(self):
+        temp_file = tempfile.NamedTemporaryFile()
+        temp_file.name = "image.png"
+        image_file = get_temporary_image(temp_file)
+        image_file.seek(0)
+        self.article_data["img1"] = image_file
+
+        response = self.client.post(
+            path=reverse('article_create_view'),
+            data=encode_multipart(data=self.article_data, boundary=BOUNDARY),
+            content_type=MULTIPART_CONTENT,
+            HTTP_AUTHORIZATION=f"Bearer {self.access_token}"
+        )
+        self.assertEqual(response.status_code, 200)
 
     def test_update_article(self):
         response = self.client.put(
