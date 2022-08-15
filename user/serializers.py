@@ -4,6 +4,8 @@ from rest_framework.validators import UniqueValidator
 import json
 from collections import OrderedDict
 
+from django.db import transaction
+
 from user.models import (
     User as UserModel,
     UserProfile as UserProfileModel,
@@ -79,7 +81,7 @@ class UserSerializer(serializers.ModelSerializer):
 
 
 class UserSiginUpSerializer(serializers.ModelSerializer):
-    userprofile = UserProfileSerializer()
+    userprofile = UserProfileSerializer(required=False)
 
     class Meta:
         model = UserModel
@@ -107,10 +109,12 @@ class UserSiginUpSerializer(serializers.ModelSerializer):
                 },
             },
         }
-
+        
+    @transaction.atomic
     def create(self, validated_data):
         print("8번")
         print(validated_data)
+
         # User object 생성
         user_category_id = validated_data['user_category']
         user = UserModel.objects.create(
@@ -130,4 +134,47 @@ class UserSiginUpSerializer(serializers.ModelSerializer):
                 **user_profile,
             )
             user.save()
-            return user
+
+        return user
+
+
+class UserSiginPutSerializer(serializers.ModelSerializer):
+    userprofile = UserProfilePutSerializer()
+
+    class Meta:
+        model = UserModel
+        fields = ["username", "email", "userprofile"]
+
+        extra_kwargs = {
+            # write_only : 해당 필드를 쓰기 전용으로 만들어 준다.
+            # 쓰기 전용으로 설정 된 필드는 직렬화 된 데이터에서 보여지지 않는다.
+            "username": {
+                'required': False,
+            }
+        }
+
+    def update(self, instance, validated_data):
+        print("6번")
+        print(instance)
+        print("7번")
+        print(validated_data)
+
+        user_profile = validated_data.pop("userprofile")
+        print("8번")
+        print(user_profile)
+
+        # instance에는 입력된 object가 담긴다.
+        # 유저 필수 정보 수정
+        for key, value in validated_data.items():
+            setattr(instance, key, value)
+
+        instance.save()
+
+        # 프로필 정보 수정
+        user_profile_object = instance.userprofile
+        for key, value in user_profile.items():
+            setattr(user_profile_object, key, value)
+
+        user_profile_object.save()
+
+        return instance

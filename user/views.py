@@ -27,8 +27,7 @@ from user.models import (
 # user/
 class UserView(APIView):
     permission_classes = [permissions.AllowAny]       # 누구나 view 접근 가능
-    # permission_classes = [permissions.IsAuthenticated] # 로그인된 사용자만 view 접근 가능
-    
+
     # 사용자 정보 조회
     def get(self, request):
         user = request.user
@@ -39,60 +38,27 @@ class UserView(APIView):
     # 회원가입
     def post(self, request):
         data = request.data.copy()
-        print("1번")
-        print(data)
-
-        try:
-            if data['username'] == 'test1234':
-                query_dict_data = QueryDict('', mutable=True)
-                query_dict_data.update(data)
-                print("1-1번")
-                print(query_dict_data)
-
-                data = query_dict_data
-        except:
-            pass
 
         for i in data:
             if data[i] == "":
                 return Response("회원정보가 없습니다.", status=status.HTTP_400_BAD_REQUEST)
 
         profile_data = data.pop('userprofile')[0]
-        print("2번")
-        print(profile_data)
         img_data = data.pop('img')[0]
-        print("3번")
-        print(img_data)
 
-        try:
-            if data['username'] != 'test':
-                profile_data = literal_eval(profile_data)
-                print("4번")
-                print(profile_data)
-        except:
-            pass
+        profile_data = literal_eval(profile_data)
 
         if img_data != "undefined":
             profile_data['img'] = img_data
 
-        print("5번")
-        print(img_data)
-
-        # profile_data['img'] = img_data
-
         data['userprofile'] = profile_data
-        print("6번")
-        print(data)
 
         serializer = UserSiginUpSerializer(data=data.dict(), context={"request": request})
-        print("7번")
-        print(serializer)
 
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_200_OK)
         else:
-            # return Response({"message": f'{serializer.errors}'}, status=status.HTTP_400_BAD_REQUEST)
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     # 수정
