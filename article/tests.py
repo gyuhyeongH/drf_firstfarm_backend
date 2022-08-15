@@ -41,6 +41,9 @@ class ArticleTest(APITestCase):
             "farm_name": "test2",
             "location": "test2",
             "title": "test2",
+            "img1": "undefined",
+            "img2": "undefined",
+            "img3": "undefined",
         }
         cls.user = User.objects.create_user('testusername', 'testpassword')
         cls.usercategory = UserCategory.objects.create(name="test")
@@ -53,8 +56,10 @@ class ArticleTest(APITestCase):
                                                      age=11, birthday="1995-01-25", img="", phone_number="11", points=0)
         cls.article = Article.objects.create(article_category_id=1, farm_name="aaaa", location='aaaaa', title='aaaaa',
                                              cost='aaaaaa',
-                                             user_id=1, requirement='aaaaa', period='aaaaa', desc='aaaaa', img1="undefined",
-                                             img2="undefined", img3="undefined")
+
+                                             user_id=1, requirement='aaaaa', period='aaaaa', desc='aaaaa', img1='undefined',
+                                             img2='undefined', img3='undefined')
+
 
     def setUp(self):
         self.access_token = self.client.post(reverse('token_obtain_pair'), self.user_data).data['access']
