@@ -117,7 +117,6 @@ def recommends(articles, user_prefer):
 class ArticleSearchView(APIView):
     def get(self, request):
         search_text = request.GET.get("search_text","")
-        print(search_text)
         articles = ArticleModel.objects.filter((Q(title__icontains=search_text) | Q(desc__icontains=search_text)) & Q(display_article=True))
 
         articles_serializer = ArticleGetSerializer(articles, many=True).data
@@ -139,7 +138,6 @@ class ArticleDetailView(APIView):
 
         serializer = ArticleSerializer(article).data
         serializer['apply'] = apply_view
-        print(serializer)
         return Response(serializer, status=status.HTTP_200_OK)
 
     def post(self, request):
@@ -166,10 +164,21 @@ class ArticleDetailView(APIView):
             return Response({"message": f'${serializer.errors}'}, status=status.HTTP_400_BAD_REQUEST)
 
     def put(self, request, article_id):
+        data = request.data.copy()
+
+        if request.data['img1'] == 'undefined' or request.data['img1'] is None:
+            data['img1'] = None
+
+        if request.data['img2'] == 'undefined' or request.data['img2'] is None:
+            data['img2'] = None
+
+        if request.data['img3'] == 'undefined' or request.data['img3'] is None:
+            data['img3'] = None
+
         article = ArticleModel.objects.get(id=article_id)
 
         if article.user.id == request.user.id:
-            article_serializer = ArticleSerializer(article, data=request.data, partial=True)
+            article_serializer = ArticleSerializer(article, data=data, partial=True)
 
             if article_serializer.is_valid():
                 article_serializer.save()
@@ -193,7 +202,6 @@ class ArticleApplyView(APIView):
 
     def post(self, request, article_id):
         article = ArticleModel.objects.get(id=article_id)
-        # print(article)
         data = {"article": article.id, "user": request.user.id}
         serializer = ArticleApplySerializer(data=data, partial=True)
 
