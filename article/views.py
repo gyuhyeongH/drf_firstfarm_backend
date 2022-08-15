@@ -167,14 +167,13 @@ class ArticleDetailView(APIView):
         data = request.data.copy()
 
         if request.data['img1'] == 'undefined' or request.data['img1'] is None:
-            data['img1'] = None
+            data.pop('img1')
 
         if request.data['img2'] == 'undefined' or request.data['img2'] is None:
-            data['img2'] = None
+            data.pop('img2')
 
         if request.data['img3'] == 'undefined' or request.data['img3'] is None:
-            data['img3'] = None
-
+            data.pop('img3')
         article = ArticleModel.objects.get(id=article_id)
 
         if article.user.id == request.user.id:
@@ -184,7 +183,6 @@ class ArticleDetailView(APIView):
                 article_serializer.save()
 
                 return Response({"message": "게시글이 수정되었습니다."}, status=status.HTTP_200_OK)
-
             return Response(article_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def delete(self, request, article_id):
