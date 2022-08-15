@@ -57,21 +57,8 @@ class ArticleSerializer(serializers.ModelSerializer):
     display_article = serializers.BooleanField(default=True)
 
     def create(self, validated_data):
-        article = ArticleModel.objects.create(
-            user=validated_data['user'],
-            article_category=validated_data['article_category'],
-            farm_name=validated_data['farm_name'],
-            location=validated_data['location'],
-            title=validated_data['title'],
-            cost=validated_data['cost'],
-            requirement=validated_data['requirement'],
-            period=validated_data['period'],
-            desc=validated_data['desc'],
-            img1=validated_data['img1'],
-            img2=validated_data['img2'],
-            img3=validated_data['img3'],
-            display_article=True,
-        )
+        article = ArticleModel(**validated_data)
+        article.save()
         return article
     def update(self, instance, validated_data):
         for key, value in validated_data.items():

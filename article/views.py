@@ -164,10 +164,21 @@ class ArticleDetailView(APIView):
             return Response({"message": f'${serializer.errors}'}, status=status.HTTP_400_BAD_REQUEST)
 
     def put(self, request, article_id):
+        data = request.data.copy()
+
+        if request.data['img1'] == 'undefined' or request.data['img1'] is None:
+            data['img1'] = None
+
+        if request.data['img2'] == 'undefined' or request.data['img2'] is None:
+            data['img2'] = None
+
+        if request.data['img3'] == 'undefined' or request.data['img3'] is None:
+            data['img3'] = None
+
         article = ArticleModel.objects.get(id=article_id)
 
         if article.user.id == request.user.id:
-            article_serializer = ArticleSerializer(article, data=request.data, partial=True)
+            article_serializer = ArticleSerializer(article, data=data, partial=True)
 
             if article_serializer.is_valid():
                 article_serializer.save()
