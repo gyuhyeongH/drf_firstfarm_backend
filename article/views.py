@@ -105,7 +105,7 @@ def recommends(articles, user_prefer):
         prefer = mecab.nouns(user_prefer)
 
         inferred_doc_vec = model.infer_vector(prefer)
-        most_similar_docs = model.docvecs.most_similar([inferred_doc_vec], topn=10)
+        most_similar_docs = model.docvecs.most_similar([inferred_doc_vec], topn=9)
 
         for index, similarity in most_similar_docs:
             recommend_articles.append(articles[index])
@@ -117,7 +117,6 @@ def recommends(articles, user_prefer):
 class ArticleSearchView(APIView):
     def get(self, request):
         search_text = request.GET.get("search_text","")
-        print(search_text)
         articles = ArticleModel.objects.filter((Q(title__icontains=search_text) | Q(desc__icontains=search_text)) & Q(display_article=True))
 
         articles_serializer = ArticleGetSerializer(articles, many=True).data
@@ -139,7 +138,6 @@ class ArticleDetailView(APIView):
 
         serializer = ArticleSerializer(article).data
         serializer['apply'] = apply_view
-        print(serializer)
         return Response(serializer, status=status.HTTP_200_OK)
 
     def post(self, request):
@@ -166,16 +164,25 @@ class ArticleDetailView(APIView):
             return Response({"message": f'${serializer.errors}'}, status=status.HTTP_400_BAD_REQUEST)
 
     def put(self, request, article_id):
+        data = request.data.copy()
+
+        if request.data['img1'] == 'undefined' or request.data['img1'] is None:
+            data.pop('img1')
+
+        if request.data['img2'] == 'undefined' or request.data['img2'] is None:
+            data.pop('img2')
+
+        if request.data['img3'] == 'undefined' or request.data['img3'] is None:
+            data.pop('img3')
         article = ArticleModel.objects.get(id=article_id)
 
         if article.user.id == request.user.id:
-            article_serializer = ArticleSerializer(article, data=request.data, partial=True)
+            article_serializer = ArticleSerializer(article, data=data, partial=True)
 
             if article_serializer.is_valid():
                 article_serializer.save()
 
                 return Response({"message": "게시글이 수정되었습니다."}, status=status.HTTP_200_OK)
-
             return Response(article_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def delete(self, request, article_id):
@@ -193,7 +200,6 @@ class ArticleApplyView(APIView):
 
     def post(self, request, article_id):
         article = ArticleModel.objects.get(id=article_id)
-        # print(article)
         data = {"article": article.id, "user": request.user.id}
         serializer = ArticleApplySerializer(data=data, partial=True)
 
@@ -220,12 +226,29 @@ class ArticleApplyView(APIView):
 # farm_mypage ~ 자신이 올린 공고 조회
 class FarmMyPageView(APIView):
     # authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        user = request.user.id  # 로그인 한 유저
-        # user = 2
-        articles = ArticleModel.objects.filter(user=user)  # 로그인 한 유저가 올린 공고들을 가져옴
-        articles = MyPageSerializer(articles, many=True).data
+        user = request.user  # 로그인 한 유저
+
+        if (len(ArticleModel.objects.filter(user_id=user.id)) > 0):
+            articles = ArticleModel.objects.filter(user=user.id)  # 로그인 한 유저가 올린 공고들을 가져옴
+            articles = MyPageSerializer(articles, many=True).data
+        else:
+            articles = {
+                "user":user.id,
+                "email": user.email,
+                "rank": user.userprofile.rank.rank_name,
+                "birthday": user.userprofile.birthday,
+                "fullname": user.userprofile.fullname,
+                "location": user.userprofile.location,
+                "prefer": user.userprofile.prefer,
+                "gender": user.userprofile.gender,
+                "introduction": user.userprofile.introduction,
+                "phone_number": user.userprofile.phone_number,
+                "points": user.userprofile.points,
+                "profile_img": user.userprofile.img.url,
+            }
         return Response(articles, status=status.HTTP_200_OK)  # 로그인 한 유저가 올린 공고들의 serializer 를 넘겨줌
 
 
@@ -245,7 +268,6 @@ class AcceptApplyView(APIView):
         apply = ApplyModel.objects.filter(article=article_id, user=apply_id).first()
         apply_serializer = ApplySerializer(apply, data=request.data, partial=True)
         if apply_serializer.is_valid():
-            print(apply_serializer.validated_data)
             apply_serializer.save()
 
             return Response(apply_serializer.data, status=status.HTTP_200_OK)
@@ -274,23 +296,15 @@ class FarmerMyPageView(APIView):
                 "points": user.userprofile.points,
                 "profile_img": user.userprofile.img.url,
             }
-            print(apllies)
         return Response(apllies, status=status.HTTP_200_OK)  # 로그인 한 유저가 다녀온 공고들의 UserApplyserializer 정보를 넘겨줌
 
-    # def get(self,request,article_id):
-    #     user = request.user
-    #     review = ReviewModel.objects.filter(article_id=article_id,user=user)
-    #     review = ReviewSerializer(review,many=True).data
-    #
-    #     return Response(review,status=status.HTTP_200_OK)
-
     def post(self, request, article_id):
-        print(article_id)
         data = copy.deepcopy(request.data)
         data["user"] = request.user.id
         data["article"] = article_id
         data["content"] = request.data.get("content", "")  # review 내용
         data["rate"] = request.data.get("rate", "")  # 평점
+
         if request.data['img1'] == 'undefined' or request.data['img1'] is None:
             data['img1'] = None
 
@@ -305,31 +319,43 @@ class FarmerMyPageView(APIView):
         if review_serializer.is_valid():
             review_serializer.save()
             farmer = request.user
-            get_rate_rank_point(farmer,3)
+            get_rate_rank_point(farmer, 3)
             farm = ArticleModel.objects.filter(id=article_id).values("user_id")[0].get("user_id")
             farm = UserModel.objects.get(id=farm)
             get_rate_rank_point(farm, rate)
-            return Response({"result": "리뷰 작성 완료!"}, status=status.HTTP_200_OK)
+            return Response({"message": "리뷰 작성 완료!"}, status=status.HTTP_200_OK)
         else:
-            return Response({"result": "리뷰 작성 실패!"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"message": "리뷰 작성 실패!"}, status=status.HTTP_400_BAD_REQUEST)
 
     # 업데이트
     def put(self, request, review_id):
         review = ReviewModel.objects.get(id=review_id)
-        review_serializer = ReviewSerializer(review, data=request.data, partial=True)
-        print(review_serializer)
-        # if request.data['img1'] == 'undefined' or request.data['img1'] is None:
-        #     data['img1'] = None
-        #
-        # if request.data['img2'] == 'undefined' or request.data['img2'] is None:
-        #     data['img2'] = None
-        #
-        # if request.data['img3'] == 'undefined' or request.data['img3'] is None:
-        #     data['img3'] = None
-        if review_serializer.is_valid():
-            review_serializer.save()
-            return Response(review_serializer.data, status=status.HTTP_200_OK)
-        return Response({"result": "리뷰 수정 실패!"}, status=status.HTTP_400_BAD_REQUEST)
+        if(review.user_id == request.user.id):
+            data = request.data.copy()
+            if request.data['img1'] == 'undefined' or request.data['img1'] is None:
+                data['img1'] = review.img1
+
+            if request.data['img2'] == 'undefined' or request.data['img2'] is None:
+                data['img2'] = review.img2
+
+            if request.data['img3'] == 'undefined' or request.data['img3'] is None:
+                data['img3'] = review.img3
+
+            if request.data['content'] == '' or request.data['content'] is None:
+                data['content'] = review.content
+
+            if request.data['rate'] == '🌟 이만큼 만족했어요!' or request.data['rate'] is None:
+                data['rate'] = review.rate
+
+            review_serializer = ReviewSerializer(review, data=data,partial=True)
+            if review_serializer.is_valid():
+                review_serializer.save()
+                return Response(review_serializer.data, status=status.HTTP_200_OK)
+            else:
+                return Response({"message":"리뷰 수정 실패!"}, status=status.HTTP_400_BAD_REQUEST)
+        else:
+            return Response({"message": "작성자만 리뷰 수정이 가능합니다!"}, status=status.HTTP_400_BAD_REQUEST)
+
 
     # 삭제
     def delete(self, request, review_id):

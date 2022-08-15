@@ -1,7 +1,7 @@
 import json
 from rest_framework import serializers
 from rest_framework.validators import UniqueValidator
-
+import json
 from collections import OrderedDict
 
 from django.db import transaction
@@ -54,6 +54,30 @@ class UserSerializer(serializers.ModelSerializer):
             # 쓰기 전용으로 설정 된 필드는 직렬화 된 데이터에서 보여지지 않는다.
             'password': {'write_only': True},  # default : False
         }
+    def update(self, instance, validated_data):
+        print(validated_data)
+        print(instance.userprofile.items)
+        for key,value in instance.userprofile.items():
+            setattr(instance.userprofile,key,value)
+        instance.userprofile.save()
+
+        for key, value in validated_data.items():
+            setattr(instance, key, value)
+
+        instance.save()
+
+
+        return instance
+
+        # # 프로필 정보 수정
+        # user_profile_object = instance.userprofile
+
+        # for key, value in user_profile_object.items():
+        #     setattr(user_profile_object, key, value)
+
+        # user_profile_object.save()
+        #
+        # return instance
 
 
 class UserSiginUpSerializer(serializers.ModelSerializer):
@@ -104,7 +128,7 @@ class UserSiginUpSerializer(serializers.ModelSerializer):
         user_profile = validated_data.pop("userprofile")
         if user_profile:
             # 첫 회원가입시 id = 1 : name = 씨앗 default
-            user_profile = UserProfileModel.objects.create(
+            UserProfileModel.objects.create(
                 user=user,
                 rank_id=1,
                 **user_profile,

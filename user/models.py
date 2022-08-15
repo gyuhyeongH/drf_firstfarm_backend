@@ -43,7 +43,7 @@ class User(AbstractBaseUser):
     # 회원가입 정보
     username = models.CharField(verbose_name="사용자 계정", max_length=50, unique=True)
     password = models.CharField(verbose_name="사용자 비밀번호", max_length=128)
-    email = models.EmailField(verbose_name="사용자 이메일", max_length=254)
+    email = models.EmailField(verbose_name="사용자 이메일", max_length=254, blank=True)
     join_date = models.DateTimeField(verbose_name="가입일", auto_now_add=True)
 
     # user category
@@ -80,7 +80,8 @@ class UserProfile(models.Model):
     rank = models.ForeignKey(Rank, verbose_name="랭크", on_delete=models.SET_NULL, null=True)
 
     fullname = models.CharField(verbose_name="이름", max_length=128)
-    location = models.CharField(verbose_name="지역", max_length=128, blank=True)
+
+    location = models.CharField(verbose_name="지역", max_length=128)
 
     GENDERS = (
         ('M', '남성(Man)'),
