@@ -4,6 +4,8 @@ from rest_framework.validators import UniqueValidator
 
 from collections import OrderedDict
 
+from django.db import transaction
+
 from user.models import (
     User as UserModel,
     UserProfile as UserProfileModel,
@@ -55,7 +57,7 @@ class UserSerializer(serializers.ModelSerializer):
 
 
 class UserSiginUpSerializer(serializers.ModelSerializer):
-    userprofile = UserProfileSerializer()
+    userprofile = UserProfileSerializer(required=False)
 
     class Meta:
         model = UserModel
@@ -83,10 +85,12 @@ class UserSiginUpSerializer(serializers.ModelSerializer):
                 },
             },
         }
-
+        
+    @transaction.atomic
     def create(self, validated_data):
         print("8번")
         print(validated_data)
+
         # User object 생성
         user_category_id = validated_data['user_category']
         user = UserModel.objects.create(
@@ -106,7 +110,8 @@ class UserSiginUpSerializer(serializers.ModelSerializer):
                 **user_profile,
             )
             user.save()
-            return user
+
+        return user
 
 
 class UserSiginPutSerializer(serializers.ModelSerializer):
