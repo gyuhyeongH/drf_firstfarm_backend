@@ -41,7 +41,7 @@ SECRET_KEY = os.environ.get("SECRET_KEY")
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
-ALLOWED_HOSTS = ["127.0.0.1", "0.0.0.0", "3.35.37.28", "rbgud.shop", "www.rbgud.shop"]
+ALLOWED_HOSTS = ["127.0.0.1", "0.0.0.0", "54.180.104.147", "rbgud.shop", "www.rbgud.shop"]
 CSRF_TRUSTED_ORIGINS = ['https://rbgud.shop']
 
 # Application definition
@@ -174,10 +174,9 @@ CORS_ORIGIN_ALLOW_ALL = True
 CORS_ALLOWED_ORIGINS = [
     "http://127.0.0.1:5500",
     "http://localhost:5500",
-    "http://3.35.37.28:8000",
-    "http://3.35.37.28",
     "https://rbgud.shop",
-    "https://62eac28487e5c50073cf5f2e--polite-paprenjak-e2afb5.netlify.app",
+    "https://hwisu.shop",
+
 ]
 
 CORS_ALLOW_METHODS = [

@@ -1,6 +1,6 @@
 from ast import literal_eval
 from django.http import QueryDict
-
+import json
 from django.shortcuts import render
 from django.contrib.auth import login, logout, authenticate
 
@@ -16,7 +16,7 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.authentication import JWTAuthentication
 
 from user.jwt_claim_serializer import FirstFarmTokenObtainPairSerializer
-from user.serializers import UserSerializer, UserSiginUpSerializer, UserSiginPutSerializer
+from user.serializers import UserSerializer, UserSiginUpSerializer
 from user.models import (
     User as UserModel,
     UserProfile as UserProfileModel,
@@ -56,7 +56,7 @@ class UserView(APIView):
         for i in data:
             if data[i] == "":
                 return Response("회원정보가 없습니다.", status=status.HTTP_400_BAD_REQUEST)
-                
+
         profile_data = data.pop('userprofile')[0]
         print("2번")
         print(profile_data)
@@ -84,7 +84,7 @@ class UserView(APIView):
         print("6번")
         print(data)
 
-        serializer = UserSiginUpSerializer(data=data.dict(), context={"request" : request})
+        serializer = UserSiginUpSerializer(data=data.dict(), context={"request": request})
         print("7번")
         print(serializer)
 
@@ -97,57 +97,28 @@ class UserView(APIView):
 
     # 수정
     def put(self, request, obj_id):
-        # user = request.user
-        # print(user)
-
         try:
             user = UserModel.objects.get(pk=obj_id)
-            print(user)
         except user.DoesNotExist:
             return Response(status=404)
 
         data = request.data.copy()
-        print("1번")
-        print(data)
+        if data['img'] == 'undefined' or data['img'] is None:
+            data['img'] = user.userprofile.img
+        if data['location'] == '' or data['location'] is None:
+            data['location'] = user.userprofile.location
+        if data['introduction'] == '' or data['introduction'] is None:
+            data['introduction'] = user.userprofile.introduction
+        if data['prefer'] == '' or data['prefer'] is None:
+            data['prefer'] = user.userprofile.prefer
 
-        profile_data = data.pop('userprofile')[0]
-        print("2번")
-        print(profile_data)
+        user.userprofile.location = data['location']
+        user.userprofile.img = data['img']
+        user.userprofile.introduction = data['introduction']
+        user.userprofile.prefer = data['prefer']
+        user.userprofile.save()
+        return Response(status=status.HTTP_200_OK)
 
-        # profile_data = json.dumps(profile_data)
-        # print(profile_data)
-        
-        img_data = data.pop('img')[0]
-        print("3번")
-        print(img_data)
-
-        profile_data = literal_eval(profile_data)
-        profile_data['img'] = img_data
-
-        print("4번")
-        print(profile_data)
-
-        print("5번")
-        print(data)
-
-        data['userprofile'] = profile_data
-        print("5-1번")
-        print(data)
-        print(data.dict())
-
-        # json_trans_data = json.loads(json.dumps(data))
-        # print(json_trans_data)
-
-        # username 수정 불가
-        # data.pop("username", "")
-        user_serializer = UserSiginPutSerializer(user, data=data.dict(), context={"request" : request})
-        # print(user_serializer)
-
-        if user_serializer.is_valid():
-            user_serializer.save()
-            return Response(user_serializer.data, status=status.HTTP_200_OK)
-
-        return Response({"message": f'${user_serializer.errors}'}, 400)
 
     # 회원탈퇴 = 삭제
     def delete(self, request, obj_id):
