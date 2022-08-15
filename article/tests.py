@@ -11,14 +11,6 @@ from article.models import ArticleCategory, Article
 from article.serializers import ArticleSerializer
 
 
-def get_temporary_image(temp_file):
-    size = (200, 200)
-    color = (255, 0, 0, 0)
-    image = Image.new("RGBA", size, color)
-    image.save(temp_file, 'png')
-    return temp_file
-
-
 class ArticleTest(APITestCase):
 
     @classmethod
@@ -63,21 +55,6 @@ class ArticleTest(APITestCase):
         response = self.client.post(
             path=reverse('article_create_view'),
             data=self.article_data,
-            HTTP_AUTHORIZATION=f"Bearer {self.access_token}"
-        )
-        self.assertEqual(response.status_code, 200)
-
-    def test_create_article_with_image(self):
-        temp_file = tempfile.NamedTemporaryFile()
-        temp_file.name = "image.png"
-        image_file = get_temporary_image(temp_file)
-        image_file.seek(0)
-        self.article_data["img1"] = image_file
-
-        response = self.client.post(
-            path=reverse('article_create_view'),
-            data=encode_multipart(data=self.article_data, boundary=BOUNDARY),
-            content_type=MULTIPART_CONTENT,
             HTTP_AUTHORIZATION=f"Bearer {self.access_token}"
         )
         self.assertEqual(response.status_code, 200)
