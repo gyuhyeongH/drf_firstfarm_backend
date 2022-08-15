@@ -333,13 +333,13 @@ class FarmerMyPageView(APIView):
         if(review.user_id == request.user.id):
             data = request.data.copy()
             if request.data['img1'] == 'undefined' or request.data['img1'] is None:
-                data['img1'] = review.img1
+                data['img1'] = None
 
             if request.data['img2'] == 'undefined' or request.data['img2'] is None:
-                data['img2'] = review.img2
+                data['img2'] = None
 
             if request.data['img3'] == 'undefined' or request.data['img3'] is None:
-                data['img3'] = review.img3
+                data['img3'] = None
 
             if request.data['content'] == '' or request.data['content'] is None:
                 data['content'] = review.content
