@@ -33,9 +33,9 @@ class ArticleTest(APITestCase):
             "requirement": "test",
             "period": "test",
             "desc": "test",
-            "img1": None,
-            "img2": None,
-            "img3": None,
+            "img1": "undefined",
+            "img2": "undefined",
+            "img3": "undefined",
         }
         cls.article_update_data = {
             "farm_name": "test2",
@@ -53,8 +53,8 @@ class ArticleTest(APITestCase):
                                                      age=11, birthday="1995-01-25", img="", phone_number="11", points=0)
         cls.article = Article.objects.create(article_category_id=1, farm_name="aaaa", location='aaaaa', title='aaaaa',
                                              cost='aaaaaa',
-                                             user_id=1, requirement='aaaaa', period='aaaaa', desc='aaaaa', img1=None,
-                                             img2=None, img3=None)
+                                             user_id=1, requirement='aaaaa', period='aaaaa', desc='aaaaa', img1="undefined",
+                                             img2="undefined", img3="undefined")
 
     def setUp(self):
         self.access_token = self.client.post(reverse('token_obtain_pair'), self.user_data).data['access']
@@ -99,7 +99,7 @@ class ArticleReadTest(APITestCase):
             cls.articles.append(Article.objects.create(article_category_id=1, farm_name="aaaa", location='aaaaa',
                                                        title=cls.faker.sentence()[:30], cost='aaaaaa',
                                                        user=cls.user, requirement='aaaaa', period='aaaaa',
-                                                       desc=cls.faker.text(), img1=None, img2=None, img3=None, display_article=True))
+                                                       desc=cls.faker.text(), img1='undefined', img2='undefined', img3='undefined', display_article=True))
 
     def test_get_article(self):
         url = reverse('article_view')
