@@ -1,6 +1,6 @@
 # 첫농
 - 농사 체험/근로 중개 서비스 첫농 입니다.
-- [기획서](https://autumn-fog-802.notion.site/58ba2147a1df41839cd9b1c973dda337)
+- [기획서](https://www.notion.so/02991c731e82421abd2af57895737edb)
 
 <br>
 
@@ -84,10 +84,10 @@
 <br>
 
 <details>
-<summary>mecab 윈도우 호환문제</summary>
+<summary>mecab 윈도우 호환 문제</summary>
 <div markdown="1">       
 
-mecab 라이브러리가 window에서는 사용불가능하여 배포 전 테스트하는데 어려움 발생  
+mecab 라이브러리가 window에서는 사용 불가능하여 배포 전 테스트하는데 어려움 발생  
 → 도커를 이용하여 해결
 
   
