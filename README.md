@@ -54,12 +54,7 @@
 
 <br>
 
-# 5. 핵심 트러블 슈팅
-- 
-
-<br>
-
-# 6. 그 외 트러블 슈팅
+# 5.  트러블 슈팅
 
 <details>
 <summary>XSS</summary>
@@ -84,6 +79,19 @@
 
   
 ✅ [코드 확인](https://github.com/gyuhyeongH/firstfarm_front2/blob/837f7e5cefe37222e1d0ba248ad556e61de9d9c5/js/articledetail.js#L1-L4)
+</div>
+</details>
+<br>
+
+<details>
+<summary>mecab 윈도우 호환문제</summary>
+<div markdown="1">       
+
+mecab 라이브러리가 window에서는 사용불가능하여 배포 전 테스트하는데 어려움 발생  
+→ 도커를 이용하여 해결
+
+  
+✅ [코드 확인](https://github.com/gyuhyeongH/drf_firstfarm_backend/blob/16397b02c76d13ff8ef200633b63256f2a326658/Dockerfile#L1)
 </div>
 </details>
 
